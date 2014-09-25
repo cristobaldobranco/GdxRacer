@@ -12,6 +12,7 @@ public class RoadSegment {
 	Color colorRoad;
 	Color colorRumble;
 	Color colorGrass;
+	Color colorLane;
 
 	public RoadSegment(int n, float segmentLength) {
 		index = n;
@@ -19,11 +20,12 @@ public class RoadSegment {
 		p2 = new RoadSegmentPoint(n + 1, segmentLength);
 	}
 	
-	public void setColors(Color r, Color ru, Color g)
+	public void setColors(Color r, Color ru, Color g, Color l)
 	{
 		colorRoad = r;
 		colorRumble = ru;
 		colorGrass = g;
+		colorLane = l;
 	}
 }
 

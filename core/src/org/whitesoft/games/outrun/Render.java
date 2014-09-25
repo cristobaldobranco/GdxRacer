@@ -57,8 +57,9 @@ public class Render {
 		float l2 = laneMarkerWidth(w2, lanes);
 		float lanew1, lanew2, lanex1, lanex2, lane;
 
-		drawQuadPoly(new float [] {0, y2, width, y2, width, y1 - y2, 0, y1 - y2}, segment.colorGrass);
+		drawQuadPoly(new float [] {0, y2, width, y2, width, y1, 0, y1}, segment.colorGrass);
 		drawQuadPoly(new float [] {x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2}, segment.colorRumble);
+		drawQuadPoly(new float [] {x1+w1+r1, y1, x1+w1, y1, x2+w2, y2, x2+w2+r2, y2}, segment.colorRumble);		
 		drawQuadPoly(new float [] { x1-w1,    y1, x1+w1, y1, x2+w2, y2, x2-w2,    y2}, segment.colorRoad);
 		 
 
@@ -68,20 +69,18 @@ public class Render {
 		lanex2 = x2 - w2 + lanew2;
 		for(lane = 1 ; lane < lanes ; lanex1 += lanew1, lanex2 += lanew2, lane++)
 			
-			drawQuadPoly(new float [] {lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2}, Colors.getColor("LIGHTLANE"));
+			drawQuadPoly(new float [] {lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2}, segment.colorLane);
 
 //		Render.fog(ctx, 0, y1, width, y2-y1, fog);
 		
 	}
 
 	private float laneMarkerWidth(float w1, float lanes) {
-		// TODO Auto-generated method stub
-		return 0;
+		return w1/Math.max(32, 8*lanes);
 	}
 
 	private float rumbleWidth(float w1, float lanes) {
-		// TODO Auto-generated method stub
-		return 0;
+		return w1/Math.max(6,  2*lanes);
 	}
 	
 /*

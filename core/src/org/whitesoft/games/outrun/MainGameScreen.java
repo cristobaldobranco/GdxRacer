@@ -34,7 +34,7 @@ public class MainGameScreen implements Screen {
 	//  var resolution    = null;                    // scaling factor to provide resolution independence (computed)
 	float roadWidth     = 2000;                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
 	float segmentLength = 200;                     // length of a single segment
-	float  rumbleLength  = 3;                       // number of segments per red/white rumble strip
+	int  rumbleLength  = 3;                       // number of segments per red/white rumble strip
 	float  trackLength   = 0;                    // z length of entire track (computed)
 	float  lanes         = 3;                       // number of lanes
 	float  fieldOfView   = 100;                     // angle (degrees) for field of view
@@ -94,7 +94,10 @@ public class MainGameScreen implements Screen {
 					Math.floor(n/rumbleLength)%2 == 0 ? 
 							Colors.getColor("DARKRUMBLE") : Colors.getColor("LIGHTRUMBLE"), 
 					Math.floor(n/rumbleLength)%2 == 0 ? 
-							Colors.getColor("DARKGRASS") : Colors.getColor("LIGHTGRASS"));
+							Colors.getColor("DARKGRASS") : Colors.getColor("LIGHTGRASS"),
+					Math.floor(n/rumbleLength)%2 == 0 ? 
+							Colors.getColor("DARKLANE") : Colors.getColor("LIGHTLANE"));
+			
 			/*      .push({
 	         index: n,
 	         p1: { world: { z:  n   *segmentLength }, camera: {}, screen: {} },
@@ -157,7 +160,7 @@ public class MainGameScreen implements Screen {
 		int n;
 		RoadSegment segment;
 
-		for(n = 0 ; n < drawDistance ; n++) {
+		for(n = 0 ; n < drawDistance-1 ; n++) {
 
 			segment        = segments[(baseSegment.index + n) % segments.length];
 			segment.looped = segment.index < baseSegment.index;
@@ -187,6 +190,7 @@ public class MainGameScreen implements Screen {
 	
 		@Override
 	public void render(float delta) {
+//		System.out.println("Render");
 		getInput();
 		updateGameWorld(delta);
 		draw(delta);
@@ -197,6 +201,8 @@ public class MainGameScreen implements Screen {
 		keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) ;
 		keyLeft   = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT) ;
 		keyRight  = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT) ;
+		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
+			Gdx.app.exit();
 	}
 
 	@Override

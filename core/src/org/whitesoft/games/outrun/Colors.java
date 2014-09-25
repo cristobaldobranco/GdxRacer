@@ -29,9 +29,10 @@ public class Colors {
 		colors.put("DARKROAD", new Color(0x696969FF));
 		colors.put("LIGHTGRASS", new Color(0x10AA10FF));
 		colors.put("DARKGRASS", new Color(0x009A00FF));
-		colors.put("LIGHTRUMBLE", new Color(0x555555FF));
-		colors.put("DARKRUMBLE", new Color(0xBBBBBBFF));
+		colors.put("LIGHTRUMBLE", new Color(0xDDDDDDFF));
+		colors.put("DARKRUMBLE", new Color(0xBB0000FF));
 		colors.put("LIGHTLANE", new Color(0xCCCCCCFF));
+		colors.put("DARKLANE", new Color(0xCCCCCC00));
 		
 	}
 	

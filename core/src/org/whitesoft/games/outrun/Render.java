@@ -68,7 +68,6 @@ public class Render {
 		lanex1 = x1 - w1 + lanew1;
 		lanex2 = x2 - w2 + lanew2;
 		for(lane = 1 ; lane < lanes ; lanex1 += lanew1, lanex2 += lanew2, lane++)
-			
 			drawQuadPoly(new float [] {lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2}, segment.colorLane);
 
 //		Render.fog(ctx, 0, y1, width, y2-y1, fog);
@@ -91,7 +90,7 @@ public class Render {
 	},	
 	public void background(int width, int height, int layer, int rotation, int offset) {
 
-		float imageW = layer.w/2;
+		float imageW = layer.w/2
 		float imageH = layer.h;
 
 		var sourceX = layer.x + Math.floor(layer.w * rotation);

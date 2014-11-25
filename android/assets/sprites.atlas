@@ -1,0 +1,250 @@
+
+sprites.png
+size: 1006,1022
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+billboard01
+  rotate: false
+  xy: 581, 585
+  size: 300, 170
+  orig: 300, 170
+  offset: 0, 0
+  index: -1
+billboard05
+  rotate: false
+  xy: 549, 393
+  size: 298, 190
+  orig: 298, 190
+  offset: 0, 0
+  index: -1
+billboard06
+  rotate: false
+  xy: 549, 201
+  size: 298, 190
+  orig: 298, 190
+  offset: 0, 0
+  index: -1
+billboard07
+  rotate: false
+  xy: 536, 9
+  size: 298, 190
+  orig: 298, 190
+  offset: 0, 0
+  index: -1
+billboard08
+  rotate: false
+  xy: 581, 757
+  size: 385, 265
+  orig: 385, 265
+  offset: 0, 0
+  index: -1
+billboard09
+  rotate: false
+  xy: 219, 378
+  size: 328, 282
+  orig: 328, 282
+  offset: 0, 0
+  index: -1
+boulder2
+  rotate: false
+  xy: 236, 14
+  size: 298, 140
+  orig: 298, 140
+  offset: 0, 0
+  index: -1
+boulder3
+  rotate: false
+  xy: 204, 156
+  size: 320, 220
+  orig: 320, 220
+  offset: 0, 0
+  index: -1
+bush2
+  rotate: false
+  xy: 2, 2
+  size: 232, 152
+  orig: 232, 152
+  offset: 0, 0
+  index: -1
+car01
+  rotate: false
+  xy: 926, 113
+  size: 80, 56
+  orig: 80, 56
+  offset: 0, 0
+  index: -1
+car02
+  rotate: false
+  xy: 836, 53
+  size: 80, 59
+  orig: 80, 59
+  offset: 0, 0
+  index: -1
+car03
+  rotate: false
+  xy: 836, 114
+  size: 88, 55
+  orig: 88, 55
+  offset: 0, 0
+  index: -1
+car04
+  rotate: false
+  xy: 918, 54
+  size: 80, 57
+  orig: 80, 57
+  offset: 0, 0
+  index: -1
+column
+  rotate: false
+  xy: 2, 165
+  size: 200, 315
+  orig: 200, 315
+  offset: 0, 0
+  index: -1
+dead_tree1
+  rotate: false
+  xy: 849, 251
+  size: 135, 332
+  orig: 135, 332
+  offset: 0, 0
+  index: -1
+palm_tree
+  rotate: false
+  xy: 2, 482
+  size: 215, 540
+  orig: 215, 540
+  offset: 0, 0
+  index: -1
+player_uphill_left
+  rotate: false
+  xy: 836, 6
+  size: 80, 45
+  orig: 80, 45
+  offset: 0, 0
+  index: -1
+player_uphill_right
+  rotate: false
+  xy: 918, 7
+  size: 80, 45
+  orig: 80, 45
+  offset: 0, 0
+  index: -1
+semi
+  rotate: false
+  xy: 883, 611
+  size: 122, 144
+  orig: 122, 144
+  offset: 0, 0
+  index: -1
+tree1
+  rotate: false
+  xy: 219, 662
+  size: 360, 360
+  orig: 360, 360
+  offset: 0, 0
+  index: -1
+truck
+  rotate: false
+  xy: 849, 171
+  size: 100, 78
+  orig: 100, 78
+  offset: 0, 0
+  index: -1
+
+sprites2.png
+size: 507,984
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+billboard02
+  rotate: false
+  xy: 286, 764
+  size: 215, 220
+  orig: 215, 220
+  offset: 0, 0
+  index: -1
+billboard03
+  rotate: false
+  xy: 2, 467
+  size: 230, 220
+  orig: 230, 220
+  offset: 0, 0
+  index: -1
+billboard04
+  rotate: false
+  xy: 2, 45
+  size: 268, 170
+  orig: 268, 170
+  offset: 0, 0
+  index: -1
+boulder1
+  rotate: false
+  xy: 2, 217
+  size: 168, 248
+  orig: 168, 248
+  offset: 0, 0
+  index: -1
+bush1
+  rotate: false
+  xy: 172, 270
+  size: 240, 155
+  orig: 240, 155
+  offset: 0, 0
+  index: -1
+cactus
+  rotate: false
+  xy: 272, 8
+  size: 235, 118
+  orig: 235, 118
+  offset: 0, 0
+  index: -1
+dead_tree2
+  rotate: false
+  xy: 234, 427
+  size: 150, 260
+  orig: 150, 260
+  offset: 0, 0
+  index: -1
+player_left
+  rotate: false
+  xy: 172, 227
+  size: 80, 41
+  orig: 80, 41
+  offset: 0, 0
+  index: -1
+player_right
+  rotate: false
+  xy: 2, 2
+  size: 80, 41
+  orig: 80, 41
+  offset: 0, 0
+  index: -1
+player_straight
+  rotate: false
+  xy: 368, 721
+  size: 80, 41
+  orig: 80, 41
+  offset: 0, 0
+  index: -1
+player_uphill_straight
+  rotate: false
+  xy: 286, 717
+  size: 80, 45
+  orig: 80, 45
+  offset: 0, 0
+  index: -1
+stump
+  rotate: false
+  xy: 272, 128
+  size: 195, 140
+  orig: 195, 140
+  offset: 0, 0
+  index: -1
+tree2
+  rotate: false
+  xy: 2, 689
+  size: 282, 295
+  orig: 282, 295
+  offset: 0, 0
+  index: -1

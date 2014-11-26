@@ -1,14 +1,17 @@
 package org.whitesoft.games.outrun;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 public class Render {
 	
@@ -22,9 +25,15 @@ public class Render {
 		    0, 2, 3          // Take care of the counter-clockwise direction. 
 	};
 	
+	TextureAtlas atlas;
+
+	
 	public Render(ShapeRenderer shapeRenderer) {
 		renderer = shapeRenderer;
 		polyBatch.setProjectionMatrix(renderer.getProjectionMatrix());
+		atlas = new TextureAtlas(Gdx.files.internal("packedimages/pack.atlas"));
+		AtlasRegion region = atlas.findRegion("imagename");
+		Sprite sprite = atlas.createSprite("otherimagename");
 	}
 	
     private void drawQuadPoly(float [] vertices, Color color)
@@ -81,6 +90,36 @@ public class Render {
 	private float rumbleWidth(float w1, float lanes) {
 		return w1/Math.max(6,  2*lanes);
 	}
+	
+	public void player(float width, float height, float resolution, float roadWidth, sprites, float speedPercent, float scale, float destX, float destY, float steer, float updown) 
+	{
+
+		float bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
+		Sprite sprite;
+		if (steer < 0)
+			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
+		else if (steer > 0)
+			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
+		else
+			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
+
+		sprite(width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1);
+	}	
+	
+	public void sprite(float width, float height, float resolution, float roadWidth, int sprites, int sprite, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
+
+		//  scale for projection AND relative to roadWidth (for tweakUI)
+		float destW  = (sprite.w * scale * width/2) * (SPRITES.SCALE * roadWidth);
+		float destH  = (sprite.h * scale * width/2) * (SPRITES.SCALE * roadWidth);
+
+		destX = destX + (destW * (offsetX));
+		destY = destY + (destH * (offsetY));
+
+		float clipH = clipY != 0 ? Math.max(0, destY+destH-clipY) : 0;
+		if (clipH < destH)
+			ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
+
+	}	
 	
 /*
 	
@@ -198,19 +237,7 @@ sprite: function(ctx, width, height, resolution, roadWidth, sprites, sprite, sca
 
 //---------------------------------------------------------------------------
 
-player: function(ctx, width, height, resolution, roadWidth, sprites, speedPercent, scale, destX, destY, steer, updown) {
-
-	var bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
-	var sprite;
-	if (steer < 0)
-		sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
-	else if (steer > 0)
-		sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
-	else
-		sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
-
-	Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1);
-},
+,
 
 //---------------------------------------------------------------------------
 

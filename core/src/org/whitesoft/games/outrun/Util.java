@@ -1,6 +1,10 @@
 package org.whitesoft.games.outrun;
 
+import java.util.Random;
+
 public class Util {
+	
+	public static Random rnd = new Random();
 
 	public static float accelerate(float speed, float accel, float dt) {
 		return speed + (accel * dt);  
@@ -40,8 +44,22 @@ public class Util {
 		while (result < 0)
 			result += max;
 		return result;
-	}	
+	}
 
+	
+	public static int randomInt(int min, int max)
+	{
+		return Math.round(interpolate(min, max, rnd.nextFloat())); 
+	}
+	
+	private static float interpolate(int a, int b, float percent) {
+		return a + (b-a)*percent;
+	}
+
+	public static int randomChoice(int [] choices)
+	{
+		return choices[randomInt(0, choices.length - 1)];
+	}
 }
 
 

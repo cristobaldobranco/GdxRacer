@@ -58,6 +58,27 @@ public class MainGameScreen implements Screen {
 	boolean keyFaster     = false;
 	boolean keySlower     = false;
 
+	
+/*
+    var offRoadDecel   = 0.99;                    // speed multiplier when off road (e.g. you lose 2% speed each update frame)
+    var segments       = [];                      // array of road segments
+    var cars           = [];                      // array of cars on the road
+    */	
+	
+    float centrifugal    = 0.3f;                     // centrifugal force multiplier when going around curves
+    float skySpeed       = 0.001f;                   // background sky layer scroll speed when going around curve (or up hill)
+    float hillSpeed      = 0.002f;                   // background hill layer scroll speed when going around curve (or up hill)
+    float treeSpeed      = 0.003f;                   // background tree layer scroll speed when going around curve (or up hill)
+    float skyOffset      = 0;                       // current sky scroll offset
+    float hillOffset     = 0;                       // current hill scroll offset
+    float treeOffset     = 0;                       // current tree scroll offset
+    int totalCars      = 200;                     // total number of cars on the road
+    float currentLapTime = 0;                       // current lap time
+    float lastLapTime    = 0;                    // last lap time
+	
+	
+	
+	
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
 	Render renderer;

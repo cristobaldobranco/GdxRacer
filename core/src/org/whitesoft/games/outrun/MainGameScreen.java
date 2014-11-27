@@ -225,8 +225,9 @@ public class MainGameScreen implements Screen {
 	
 	private void addSprite(int n, Sprite sprite, float offset)
 	{
-		//segments[n].sprites.push({ source: sprite, offset: offset });
+		segments.get(n).addSprite(sprite, offset);
 	}
+	
 /*	
     function addSprite(n, sprite, offset) {
       segments[n].sprites.push({ source: sprite, offset: offset });
@@ -377,6 +378,7 @@ public class MainGameScreen implements Screen {
 	void draw(float dt)
 	{
 		RoadSegment baseSegment = findSegment(position);
+		RoadSegment playerSegment = findSegment(position+playerZ);
 		float maxy        = height;
 
 		Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -386,6 +388,12 @@ public class MainGameScreen implements Screen {
 //		renderer.background(background, width, height, BACKGROUND.HILLS);
 //		renderer.background(background, width, height, BACKGROUND.TREES);
 
+		float basePercent   = Util.percentRemaining(position, segmentLength);
+	    float playerPercent = Util.percentRemaining(position+playerZ, segmentLength);
+	    float playerY       = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
+		float x = 0;
+		float dx = - (baseSegment.curve * basePercent);
+		
 		int n;
 		RoadSegment segment;
 
@@ -394,7 +402,11 @@ public class MainGameScreen implements Screen {
 			segment        = segments.get((baseSegment.index + n) % segments.size());
 			segment.looped = segment.index < baseSegment.index;
 			segment.fog    = Util.exponentialFog(n/drawDistance, fogDensity);
+			segment.clip   = maxy;
 
+			Util.project(segment.p1, (playerX * roadWidth) - x,      playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+	        Util.project(segment.p2, (playerX * roadWidth) - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+			
 			Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 			Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 
@@ -404,8 +416,40 @@ public class MainGameScreen implements Screen {
 
 			renderer.segment(width, lanes, segment);
 
-			maxy = segment.p2.screen.y;
+			maxy = segment.p1.screen.y;
 		}
+		
+
+	      for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
+	        segment = segments.get((baseSegment.index + n) % segments.size());
+/*
+	        for(i = 0 ; i < segment.cars.length ; i++) {
+	          car         = segment.cars[i];
+	          sprite      = car.sprite;
+	          spriteScale = Util.interpolate(segment.p1.screen.scale, segment.p2.screen.scale, car.percent);
+	          spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
+	          spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
+	          Render.sprite(ctx, width, height, resolution, roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
+	        }
+	        for(i = 0 ; i < segment.sprites.length ; i++) {
+	          sprite      = segment.sprites[i];
+	          spriteScale = segment.p1.screen.scale;
+	          spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
+	          spriteY     = segment.p1.screen.y;
+	          Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+	        }
+*/	        
+	        if (segment == playerSegment) 
+	        {
+	        	System.out.println("renderplayer");
+	        	renderer.player(width, height, resolution, roadWidth, speed/maxSpeed,
+	                        cameraDepth/playerZ,
+	                        width/2,
+	                        (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+	                        speed * (keyLeft ? -1 : keyRight ? 1 : 0),
+	                        playerSegment.p2.world.y - playerSegment.p1.world.y);
+	        }
+	      }		
 
 /*		
 		renderer.player(width, height, resolution, roadWidth, sprites, speed/maxSpeed,

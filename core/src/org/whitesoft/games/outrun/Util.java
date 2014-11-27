@@ -62,7 +62,7 @@ public class Util {
 		return Math.round(interpolate(min, max, rnd.nextFloat())); 
 	}
 	
-	private static float interpolate(int a, int b, float percent) {
+	public static float interpolate(float a, float b, float percent) {
 		return a + (b-a)*percent;
 	}
 

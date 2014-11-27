@@ -26,14 +26,16 @@ public class Render {
 	};
 	
 	TextureAtlas atlas;
+	float spriteScale; 
 
 	
 	public Render(ShapeRenderer shapeRenderer) {
 		renderer = shapeRenderer;
 		polyBatch.setProjectionMatrix(renderer.getProjectionMatrix());
-		atlas = new TextureAtlas(Gdx.files.internal("packedimages/pack.atlas"));
-		AtlasRegion region = atlas.findRegion("imagename");
-		Sprite sprite = atlas.createSprite("otherimagename");
+		atlas = new TextureAtlas(Gdx.files.internal("sprites.atlas"));
+		spriteScale = (float) 0.3 * (1f / atlas.findRegion("player_straight").getRegionWidth());
+//		AtlasRegion region = atlas.findRegion("imagename");
+//		Sprite sprite = atlas.createSprite("otherimagename");
 	}
 	
     private void drawQuadPoly(float [] vertices, Color color)
@@ -91,33 +93,44 @@ public class Render {
 		return w1/Math.max(6,  2*lanes);
 	}
 	
-	public void player(float width, float height, float resolution, float roadWidth, sprites, float speedPercent, float scale, float destX, float destY, float steer, float updown) 
+	public void player(float width, float height, float resolution, float roadWidth, float speedPercent, float scale, float destX, float destY, float steer, float updown) 
 	{
+		int [] choices = {-1, 1} ;
 
-		float bounce = (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice([-1,1]);
-		Sprite sprite;
+		float bounce = (float) (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice(choices);
+		
+		String spriteName;
 		if (steer < 0)
-			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_LEFT : SPRITES.PLAYER_LEFT;
+			spriteName = (updown > 0) ? "player_uphill_left" : "player_left";
 		else if (steer > 0)
-			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_RIGHT : SPRITES.PLAYER_RIGHT;
+			spriteName = (updown > 0) ? "player_uphill_right" : "player_right";
 		else
-			sprite = (updown > 0) ? SPRITES.PLAYER_UPHILL_STRAIGHT : SPRITES.PLAYER_STRAIGHT;
+			spriteName = (updown > 0) ? "player_uphill_straight" : "player_straight";
 
-		sprite(width, height, resolution, roadWidth, sprites, sprite, scale, destX, destY + bounce, -0.5, -1);
+		sprite(width, height, resolution, roadWidth, spriteName, scale, destX, destY + bounce, -0.5f, -1, 0);
 	}	
 	
-	public void sprite(float width, float height, float resolution, float roadWidth, int sprites, int sprite, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
-
+	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
+		Sprite sprite = atlas.createSprite(spriteName);
+		
 		//  scale for projection AND relative to roadWidth (for tweakUI)
-		float destW  = (sprite.w * scale * width/2) * (SPRITES.SCALE * roadWidth);
-		float destH  = (sprite.h * scale * width/2) * (SPRITES.SCALE * roadWidth);
+		float destW  = (sprite.getWidth()  * scale * width/2) * (spriteScale * roadWidth);
+		float destH  = (sprite.getHeight() * scale * width/2) * (spriteScale * roadWidth);
 
 		destX = destX + (destW * (offsetX));
 		destY = destY + (destH * (offsetY));
 
 		float clipH = clipY != 0 ? Math.max(0, destY+destH-clipY) : 0;
+		System.out.println(String.format("x %f, y %f, w %f, h %f", destX, destY, destW, destH-clipH));
 		if (clipH < destH)
-			ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
+		{
+			polyBatch.begin();
+			sprite.setBounds(destX, destY, destW, destH-clipH);
+			sprite.draw(polyBatch);
+			polyBatch.end();
+		}
+			
+//			ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
 
 	}	
 	

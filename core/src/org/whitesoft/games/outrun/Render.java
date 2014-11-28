@@ -121,7 +121,7 @@ public class Render {
 		destY = destY + (destH * (offsetY));
 
 		float clipH = clipY != 0 ? Math.max(0, destY+destH-clipY) : 0;
-		System.out.println(String.format("x %f, y %f, w %f, h %f", destX, destY, destW, destH-clipH));
+//		System.out.println(String.format("x %f, y %f, w %f, h %f", destX, destY, destW, destH-clipH));
 		if (clipH < destH)
 		{
 			polyBatch.begin();

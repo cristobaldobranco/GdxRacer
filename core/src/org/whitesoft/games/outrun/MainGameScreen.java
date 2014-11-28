@@ -103,6 +103,8 @@ public class MainGameScreen implements Screen {
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
 		
+		reset();
+		
 		camera = new OrthographicCamera(width, height);
 		camera.setToOrtho(true);		
 		camera.update();
@@ -111,7 +113,6 @@ public class MainGameScreen implements Screen {
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		renderer = new Render(shapeRenderer);
 
-		reset();
 	}
 	
 	//=========================================================================
@@ -407,12 +408,16 @@ public class MainGameScreen implements Screen {
 			Util.project(segment.p1, (playerX * roadWidth) - x,      playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 	        Util.project(segment.p2, (playerX * roadWidth) - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 			
-			Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-			Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+//			Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+//			Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
+	        
+	        x = x + dx;
+	        dx = dx + segment.curve;
 
-			if ((segment.p1.camera.z <= cameraDepth) || // behind us
-					(segment.p2.screen.y >= maxy))          // clip by (already rendered) segment
-				continue;
+	        if ((segment.p1.camera.z <= cameraDepth)         || // behind us
+	            (segment.p2.screen.y >= segment.p1.screen.y) || // back face cull
+	            (segment.p2.screen.y >= maxy))                  // clip by (already rendered) hill
+	          continue;
 
 			renderer.segment(width, lanes, segment);
 
@@ -441,7 +446,6 @@ public class MainGameScreen implements Screen {
 */	        
 	        if (segment == playerSegment) 
 	        {
-	        	System.out.println("renderplayer");
 	        	renderer.player(width, height, resolution, roadWidth, speed/maxSpeed,
 	                        cameraDepth/playerZ,
 	                        width/2,
@@ -532,7 +536,7 @@ public class MainGameScreen implements Screen {
 		playerZ                = (cameraHeight * cameraDepth);
 		resolution             = height/480;
 
-//		if ((segments.length==0) || (options.segmentLength) || (options.rumbleLength))
+		if (segments == null || segments.size() ==0)
 			resetRoad(); // only rebuild road when necessary
 	}
 }

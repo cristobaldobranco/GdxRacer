@@ -27,6 +27,8 @@ public class Render {
 	
 	TextureAtlas atlas;
 	float spriteScale; 
+	
+	Sprite playerSprite;
 
 	
 	public Render(ShapeRenderer shapeRenderer) {
@@ -38,6 +40,13 @@ public class Render {
 //		Sprite sprite = atlas.createSprite("otherimagename");
 	}
 	
+	public void startRenderSequence() {
+		polyBatch.begin();
+	}
+	
+	public void finishRenderSequence() {
+		polyBatch.end();
+	}
     private void drawQuadPoly(float [] vertices, Color color)
     {
 		// Creating the color filling (but textures would work the same way)
@@ -46,11 +55,8 @@ public class Render {
 		pix.fill();
 		textureSolid = new Texture(pix);
 		PolygonRegion polyReg = new PolygonRegion(new TextureRegion(textureSolid), vertices, quadIndices);
-		polyBatch.begin();
 		poly = new PolygonSprite(polyReg);
 		poly.draw(polyBatch);
-		polyBatch.end();
-//		polyBatch = new PolygonSpriteBatch();
     }
 
 	public void segment(int width, float lanes, RoadSegment segment) {
@@ -124,10 +130,8 @@ public class Render {
 //		System.out.println(String.format("x %f, y %f, w %f, h %f", destX, destY, destW, destH-clipH));
 		if (clipH < destH)
 		{
-			polyBatch.begin();
 			sprite.setBounds(destX, destY, destW, destH-clipH);
 			sprite.draw(polyBatch);
-			polyBatch.end();
 		}
 			
 //			ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);

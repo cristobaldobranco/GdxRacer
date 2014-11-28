@@ -397,6 +397,8 @@ public class MainGameScreen implements Screen {
 		
 		int n;
 		RoadSegment segment;
+		
+		renderer.startRenderSequence();
 
 		for(n = 0 ; n < drawDistance-1 ; n++) {
 
@@ -453,7 +455,10 @@ public class MainGameScreen implements Screen {
 	                        speed * (keyLeft ? -1 : keyRight ? 1 : 0),
 	                        playerSegment.p2.world.y - playerSegment.p1.world.y);
 	        }
-	      }		
+	        
+	      }
+	      
+	      renderer.finishRenderSequence();
 
 /*		
 		renderer.player(width, height, resolution, roadWidth, sprites, speed/maxSpeed,

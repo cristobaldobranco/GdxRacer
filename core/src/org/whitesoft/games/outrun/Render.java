@@ -26,6 +26,7 @@ public class Render {
 	};
 	
 	TextureAtlas atlas;
+	TextureRegion textureRegion;
 	float spriteScale; 
 	
 	Sprite playerSprite;
@@ -47,14 +48,9 @@ public class Render {
 	public void finishRenderSequence() {
 		polyBatch.end();
 	}
-    private void drawQuadPoly(float [] vertices, Color color)
+    private void drawQuadPoly(float [] vertices, TextureRegion region)
     {
-		// Creating the color filling (but textures would work the same way)
-		Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pix.setColor(color);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
-		pix.fill();
-		textureSolid = new Texture(pix);
-		PolygonRegion polyReg = new PolygonRegion(new TextureRegion(textureSolid), vertices, quadIndices);
+		PolygonRegion polyReg = new PolygonRegion(region, vertices, quadIndices);
 		poly = new PolygonSprite(polyReg);
 		poly.draw(polyBatch);
     }
@@ -74,10 +70,10 @@ public class Render {
 		float l2 = laneMarkerWidth(w2, lanes);
 		float lanew1, lanew2, lanex1, lanex2, lane;
 
-		drawQuadPoly(new float [] {0, y2, width, y2, width, y1, 0, y1}, segment.colorGrass);
-		drawQuadPoly(new float [] {x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2}, segment.colorRumble);
-		drawQuadPoly(new float [] {x1+w1+r1, y1, x1+w1, y1, x2+w2, y2, x2+w2+r2, y2}, segment.colorRumble);		
-		drawQuadPoly(new float [] { x1-w1,    y1, x1+w1, y1, x2+w2, y2, x2-w2,    y2}, segment.colorRoad);
+		drawQuadPoly(new float [] {0, y2, width, y2, width, y1, 0, y1}, segment.textureGrass);
+		drawQuadPoly(new float [] {x1-w1-r1, y1, x1-w1, y1, x2-w2, y2, x2-w2-r2, y2}, segment.textureRumble);
+		drawQuadPoly(new float [] {x1+w1+r1, y1, x1+w1, y1, x2+w2, y2, x2+w2+r2, y2}, segment.textureRumble);		
+		drawQuadPoly(new float [] { x1-w1,    y1, x1+w1, y1, x2+w2, y2, x2-w2,    y2}, segment.textureRoad);
 		 
 
 		lanew1 = w1*2/lanes;
@@ -85,7 +81,7 @@ public class Render {
 		lanex1 = x1 - w1 + lanew1;
 		lanex2 = x2 - w2 + lanew2;
 		for(lane = 1 ; lane < lanes ; lanex1 += lanew1, lanex2 += lanew2, lane++)
-			drawQuadPoly(new float [] {lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2}, segment.colorLane);
+			drawQuadPoly(new float [] {lanex1 - l1/2, y1, lanex1 + l1/2, y1, lanex2 + l2/2, y2, lanex2 - l2/2, y2}, segment.textureLane);
 
 //		Render.fog(ctx, 0, y1, width, y2-y1, fog);
 		
@@ -118,7 +114,7 @@ public class Render {
 	
 	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
 		Sprite sprite = atlas.createSprite(spriteName);
-		
+		sprite.flip(false, true);
 		//  scale for projection AND relative to roadWidth (for tweakUI)
 		float destW  = (sprite.getWidth()  * scale * width/2) * (spriteScale * roadWidth);
 		float destH  = (sprite.getHeight() * scale * width/2) * (spriteScale * roadWidth);
@@ -133,6 +129,7 @@ public class Render {
 			sprite.setBounds(destX, destY, destW, destH-clipH);
 			sprite.draw(polyBatch);
 		}
+		
 			
 //			ctx.drawImage(sprites, sprite.x, sprite.y, sprite.w, sprite.h - (sprite.h*clipH/destH), destX, destY, destW, destH - clipH);
 

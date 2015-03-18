@@ -400,7 +400,7 @@ public class MainGameScreen implements Screen {
 		
 		renderer.startRenderSequence();
 
-		for(n = 0 ; n < drawDistance-1 ; n++) {
+		for(n = 0 ; n < drawDistance; n++) {
 
 			segment        = segments.get((baseSegment.index + n) % segments.size());
 			segment.looped = segment.index < baseSegment.index;
@@ -426,9 +426,11 @@ public class MainGameScreen implements Screen {
 			maxy = segment.p1.screen.y;
 		}
 		
+//		System.out.println(1/dt + ", " + (baseSegment.index + drawDistance - 1) % segments.size() + ", " + segments.size());
 
 	      for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
 	        segment = segments.get((baseSegment.index + n) % segments.size());
+
 /*
 	        for(i = 0 ; i < segment.cars.length ; i++) {
 	          car         = segment.cars[i];
@@ -445,6 +447,14 @@ public class MainGameScreen implements Screen {
 	          spriteY     = segment.p1.screen.y;
 	          Render.sprite(ctx, width, height, resolution, roadWidth, sprites, sprite.source, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
 	        }
+	        
+ if (segment == playerSegment) {
+          Render.player(ctx, width, height, resolution, roadWidth, sprites, speed/maxSpeed,
+                        cameraDepth/playerZ,
+                        width/2,
+                        (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+                        speed * (keyLeft ? -1 : keyRight ? 1 : 0),
+                        playerSegment.p2.world.y - playerSegment.p1.world.y);	        
 */	        
 	        if (segment == playerSegment) 
 	        {

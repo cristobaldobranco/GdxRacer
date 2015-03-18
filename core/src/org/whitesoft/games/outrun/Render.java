@@ -12,6 +12,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.rahul.libgdx.parallax.ParallaxBackground;
+import com.rahul.libgdx.parallax.TextureRegionParallaxLayer;
+import com.rahul.libgdx.parallax.Utils.WH;
 
 public class Render {
 	
@@ -30,16 +34,58 @@ public class Render {
 	float spriteScale; 
 	
 	Sprite playerSprite;
+	
+	Sprite [] backgroundSprites;
 
+	ParallaxBackground parallaxBackground;
+
+	private TextureRegion treesRegion;
+
+	private TextureRegion skyRegion;
+
+	private TextureRegion mountainsRegion;
+
+	private Texture backgrounds;	
 	
 	public Render(ShapeRenderer shapeRenderer) {
 		renderer = shapeRenderer;
 		polyBatch.setProjectionMatrix(renderer.getProjectionMatrix());
+		polyBatch.enableBlending();
 		atlas = new TextureAtlas(Gdx.files.internal("sprites.atlas"));
 		spriteScale = (float) 0.3 * (1f / atlas.findRegion("player_straight").getRegionWidth());
+		createBackgrounds();
 //		AtlasRegion region = atlas.findRegion("imagename");
 //		Sprite sprite = atlas.createSprite("otherimagename");
 	}
+	
+	private void createBackgrounds() 
+	{
+		
+		backgrounds = new Texture(Gdx.files.internal("background/background.png"));
+		
+		mountainsRegion = new TextureRegion(backgrounds, 5, 5, 1280, 480);
+		skyRegion = new TextureRegion(backgrounds, 5, 495, 1280, 480);
+		treesRegion = new TextureRegion(backgrounds, 5, 985, 1280, 480);
+		
+		backgroundSprites = new Sprite[3];
+		backgroundSprites[0]  = new Sprite(skyRegion);
+		backgroundSprites[1]  = new Sprite(mountainsRegion);
+		backgroundSprites[2]  = new Sprite(treesRegion);
+		
+		for (Sprite s : backgroundSprites)
+		{
+			s.flip(false, true);
+		}
+//		TextureRegionParallaxLayer skyLayer = new TextureRegionParallaxLayer(mountainsRegion, Gdx.graphics.getWidth(), new Vector2(.25f,0), WH.width);
+//		TextureRegionParallaxLayer mountainsLayer = new TextureRegionParallaxLayer(mountainsRegion, Gdx.graphics.getWidth(), new Vector2(.5f,0), WH.width);
+//		TextureRegionParallaxLayer treeLayer = new TextureRegionParallaxLayer(mountainsRegion, Gdx.graphics.getWidth(), new Vector2(.75f,0), WH.width);
+//	
+//		parallaxBackground = new ParallaxBackground();
+//    	parallaxBackground.addLayers(skyLayer, mountainsLayer, treeLayer);
+		//parallaxBackground.addLayers(mountainsLayerA);
+	}	
+
+	
 	
 	public void startRenderSequence() {
 		polyBatch.begin();
@@ -135,32 +181,49 @@ public class Render {
 
 	}	
 	
+	
+	
 /*
 	
 	background: function(ctx, background, width, height, layer, rotation, offset) {
 
 
 	},	
-	public void background(int width, int height, int layer, int rotation, int offset) {
+*/
+	public void background(int width, int height, int layer, float rotation, float offset) 
+	{
+		float imageW = backgroundSprites[layer].getWidth() / 2;
+		float imageH = backgroundSprites[layer].getHeight();
+		
+		float sourceX = (float) Math.floor(backgroundSprites[layer].getWidth() * rotation);
+		float sourceY = 0;
+		float sourceW = Math.min(backgroundSprites[layer].getWidth() - sourceX, imageW);
+		float sourceH = backgroundSprites[layer].getHeight();
 
-		float imageW = layer.w/2
-		float imageH = layer.h;
+/*	    var sourceX = layer.x + Math.floor(layer.w * rotation);
+	    var sourceY = layer.y
+	    var sourceW = Math.min(imageW, layer.x+layer.w-sourceX);
+	    var sourceH = imageH;
+	    
+	    var destX = 0;
+	    var destY = offset;
+	    var destW = Math.floor(width * (sourceW/imageW));
+	    var destH = height;
 
-		var sourceX = layer.x + Math.floor(layer.w * rotation);
-		var sourceY = layer.y
-				var sourceW = Math.min(imageW, layer.x+layer.w-sourceX);
-		var sourceH = imageH;
-
+	    ctx.drawImage(background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH);
+	    if (sourceW < imageW)
+	      ctx.drawImage(background, layer.x, sourceY, imageW-sourceW, sourceH, destW-1, destY, width-destW, destH);		
+*/		
+		
 		float destX = 0;
 		float destY = offset;
-		float destW = Math.floor(width * (sourceW/imageW));
+		float destW = (float) Math.floor(width * (sourceW/imageW));
 		float destH = height;
 
-		ctx.drawImage(background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH);
-		if (sourceW < imageW)
-			ctx.drawImage(background, layer.x, sourceY, imageW-sourceW, sourceH, destW-1, destY, width-destW, destH);	
+		backgroundSprites[layer].setBounds(destX, destY, destW, destH);
+		backgroundSprites[layer].draw(polyBatch);
+		
 	}
-*/
 }
 
 

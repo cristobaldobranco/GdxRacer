@@ -12,7 +12,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.rahul.libgdx.parallax.ParallaxBackground;
+import com.rahul.libgdx.parallax.TextureRegionParallaxLayer;
+import com.rahul.libgdx.parallax.Utils.WH;
 
 public class MainGameScreen implements Screen {
 	
@@ -339,20 +345,23 @@ public class MainGameScreen implements Screen {
 	RoadSegment findSegment(float z) {
 		return segments.get((int) (Math.floor(z/segmentLength) % segments.size()));
 	}
-
+	
 	void updateGameWorld(float dt) 
 	{
 		RoadSegment playerSegment = findSegment(position + playerZ);		
 		float startPosition = position;
+		float speedPercent  = speed/maxSpeed;
 
 		position = Util.increase(position, dt * speed, trackLength);
 
-		float dx = dt * 2 * (speed/maxSpeed); // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
+		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
 		if (keyLeft)
 			playerX = playerX - dx;
 		else if (keyRight)
 			playerX = playerX + dx;
+		
+		playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);		
 
 		if (keyFaster)
 			speed = Util.accelerate(speed, accel, dt);
@@ -373,32 +382,33 @@ public class MainGameScreen implements Screen {
 	    skyOffset  = Util.increase(skyOffset,  skySpeed  * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 	    hillOffset = Util.increase(hillOffset, hillSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 	    treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
+	    
+//	    System.out.println(treeOffset);
 
 	}
 
 	void draw(float dt)
 	{
+		int n;
+		RoadSegment segment;
+
 		RoadSegment baseSegment = findSegment(position);
 		RoadSegment playerSegment = findSegment(position+playerZ);
 		float maxy        = height;
-
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-//		renderer.background(width, height, 0);//BACKGROUND.SKY);
-//		renderer.background(background, width, height, BACKGROUND.HILLS);
-//		renderer.background(background, width, height, BACKGROUND.TREES);
-
 		float basePercent   = Util.percentRemaining(position, segmentLength);
 	    float playerPercent = Util.percentRemaining(position+playerZ, segmentLength);
 	    float playerY       = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
 		float x = 0;
 		float dx = - (baseSegment.curve * basePercent);
-		
-		int n;
-		RoadSegment segment;
-		
+
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		renderer.startRenderSequence();
+		
+		renderer.background(width, height, 0, skyOffset,  resolution * skySpeed  * playerY);//BACKGROUND.SKY);
+		renderer.background(width, height, 1, hillOffset, resolution * hillSpeed * playerY);
+		renderer.background(width, height, 2, treeOffset, resolution * treeSpeed * playerY);
 
 		for(n = 0 ; n < drawDistance; n++) {
 
@@ -550,6 +560,7 @@ public class MainGameScreen implements Screen {
 		cameraDepth            = (float) (1 / Math.tan((fieldOfView/2) * Math.PI/180));
 		playerZ                = (cameraHeight * cameraDepth);
 		resolution             = height/480;
+		System.out.println(resolution);
 
 		if (segments == null || segments.size() ==0)
 			resetRoad(); // only rebuild road when necessary

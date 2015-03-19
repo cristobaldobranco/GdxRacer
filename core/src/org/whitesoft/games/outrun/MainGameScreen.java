@@ -42,6 +42,9 @@ public class MainGameScreen implements Screen {
 	int height        = 768;                     // logical canvas height
 	float resolution;
 	Vector<RoadSegment> segments;                      // array of road segments
+	
+	Vector<Car> cars;
+
 
 	//var background    = null;                    // our background image (loaded below)
 	//  var sprites       = null;                    // our spritesheet (loaded below)
@@ -66,6 +69,7 @@ public class MainGameScreen implements Screen {
 	float  decel         = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
 	float  offRoadDecel  = -maxSpeed/2;             // off road deceleration is somewhere in between
 	float  offRoadLimit  =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
+	float  spriteScale   = 1;
 
 	boolean keyLeft       = false;
 	boolean keyRight      = false;
@@ -95,7 +99,6 @@ public class MainGameScreen implements Screen {
 	
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
-	Render renderer;
 	
 	public MainGameScreen(Game game)
 	{
@@ -104,15 +107,17 @@ public class MainGameScreen implements Screen {
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
 		
-		reset();
-		
 		camera = new OrthographicCamera(width, height);
 		camera.setToOrtho(true);		
 		camera.update();
 
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setProjectionMatrix(camera.combined);
-		renderer = new Render(shapeRenderer);
+		Render.initialize(shapeRenderer);
+		spriteScale = (float) (0.3 * 1 / Render.instance.getSpriteWidth("player_straight"));
+
+		reset();
+		
 
 	}
 	
@@ -327,7 +332,7 @@ public class MainGameScreen implements Screen {
 	      addSCurves();
 	      addDownhillToEnd(0);
 	      resetSprites();
-//	      resetCars();
+	      resetCars();
 
 		segments.get(findSegment(playerZ).index + 2).setUniColor(Color.WHITE);
 		segments.get(findSegment(playerZ).index + 3).setUniColor(Color.WHITE);
@@ -337,21 +342,12 @@ public class MainGameScreen implements Screen {
 		trackLength = segments.size() * segmentLength;
 	}
 	
-	class Car
-	{
-		float offset;
-		String spriteName;
-		float speed;
-	}
-	
-	Vector<Car> cars;
-	
 	void resetCars()
 	{
 		cars = new Vector<Car>();
 //	       car, segment, offset, z, sprite, speed;
 		String [] carNames = { "car01","car02", "car03", "car04", "truck", "semi"} ;		 
-		int segment;
+		RoadSegment segment;
 		float offset, z, speed;
 		String spriteName;
 		for (int n = 0 ; n < totalCars ; n++) 
@@ -359,33 +355,20 @@ public class MainGameScreen implements Screen {
 			int neg = Util.randomInt(0,  1);
 	        offset = (float) (Math.random() * 0.8f * (neg == 1 ? 1 : -1));
 	        z      = (float) (Math.floor(Math.random() * segments.size()) * segmentLength);
-/*
- * 	        sprite = Util.randomChoice(SPRITES.CARS);
 
-	        speed  = maxSpeed/4 + Math.random() * maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);
-	        car = { offset: offset, z: z, sprite: sprite, speed: speed };
+ 	        spriteName = carNames[Util.randomInt(0, carNames.length - 1)];
+
+	        speed  = (float) (maxSpeed/4 + Math.random() * maxSpeed/(spriteName.equals("semi") ? 4 : 2));
+	        Car car = new Car();
+	        car.offset = offset;
+	        car.spriteName = spriteName;
+	        car.speed = speed;
+	        car.z = z;
+	        car.width = Render.instance.getSpriteWidth(spriteName);
 	        segment = findSegment(car.z);
-	        segment.cars.push(car);
-	        cars.push(car);
-*/	    
+	        segment.cars.add(car);
+	        cars.add(car);
 		}
-		
-		
-/*
-      cars = [];
-      var n, car, segment, offset, z, sprite, speed;
-      for (var n = 0 ; n < totalCars ; n++) {
-        offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
-        z      = Math.floor(Math.random() * segments.length) * segmentLength;
-        sprite = Util.randomChoice(SPRITES.CARS);
-        speed  = maxSpeed/4 + Math.random() * maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);
-        car = { offset: offset, z: z, sprite: sprite, speed: speed };
-        segment = findSegment(car.z);
-        segment.cars.push(car);
-        cars.push(car);
-      }		
- */
-		
 	}
 	
 	void resetSprites()
@@ -445,7 +428,9 @@ public class MainGameScreen implements Screen {
 		RoadSegment playerSegment = findSegment(position + playerZ);		
 		float startPosition = position;
 		float speedPercent  = speed/maxSpeed;
-
+		float playerW       = Render.instance.getSpriteWidth("player_straight") * spriteScale;
+		updateCars(dt, playerSegment, playerW);
+		
 		position = Util.increase(position, dt * speed, trackLength);
 
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
@@ -468,6 +453,26 @@ public class MainGameScreen implements Screen {
 			if (speed > offRoadLimit) {
 				speed = Util.accelerate(speed, offRoadDecel, dt);
 			}
+			
+	        for(SpriteWrapper sprite : playerSegment.sprites) {
+	            float  spriteW = sprite.width * spriteScale;
+	            if (Util.overlap(playerX, playerW, sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
+	              speed = maxSpeed/5;
+	              position = Util.increase(playerSegment.p1.world.z, -playerZ, trackLength); // stop in front of sprite (at front of segment)
+	              break;
+	            }
+	          }			
+		}
+		
+		for(Car car : playerSegment.cars) {
+			float carW = car.width * spriteScale;
+			if (speed > car.speed) {
+				if (Util.overlap(playerX, playerW, car.offset, carW, 0.8f)) {
+					speed    = car.speed * (car.speed/speed);
+					position = Util.increase(car.z, -playerZ, trackLength);
+					break;
+				}
+			}
 		}
 
 		playerX = Util.limit(playerX, -2, 2);     // dont ever let player go too far out of bounds
@@ -479,6 +484,67 @@ public class MainGameScreen implements Screen {
 	    
 	}
 
+	private void updateCars(float dt, RoadSegment playerSegment, float playerW) {
+        RoadSegment oldSegment, newSegment;
+        for(Car car : cars) 
+        {
+          oldSegment  = findSegment(car.z);
+          car.offset  = car.offset + updateCarOffset(car, oldSegment, playerSegment, playerW);
+          car.z       = Util.increase(car.z, dt * car.speed, trackLength);
+          car.percent = Util.percentRemaining(car.z, segmentLength); // useful for interpolation during rendering phase
+          newSegment  = findSegment(car.z);
+          if (oldSegment != newSegment) {
+            int index = oldSegment.cars.indexOf(car);
+            oldSegment.cars.remove(index);
+            newSegment.cars.add(car);
+          }
+        }
+	}
+
+
+	private float updateCarOffset(Car car, RoadSegment carSegment, RoadSegment playerSegment, float playerW) {
+        int i, dir;
+        RoadSegment segment;
+        
+        float otherCarW;
+        int lookahead = 20;
+        float carW = car.width * spriteScale;
+        // optimization, dont bother steering around other cars when 'out of sight' of the player
+        if ((carSegment.index - playerSegment.index) > drawDistance)
+          return 0;
+        for(i = 1 ; i < lookahead ; i++) {
+          segment = segments.get((carSegment.index+i)%segments.size());
+          if ((segment == playerSegment) && (car.speed > speed) && (Util.overlap(playerX, playerW, car.offset, carW, 1.2f))) {
+            if (playerX > 0.5)
+              dir = -1;
+            else if (playerX < -0.5)
+              dir = 1;
+            else
+              dir = (car.offset > playerX) ? 1 : -1;
+            return dir * 1/i * (car.speed-speed)/maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
+          }
+          for(Car otherCar : segment.cars) {
+            otherCarW = otherCar.width * spriteScale;
+            if ((car.speed > otherCar.speed) && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2f)) {
+              if (otherCar.offset > 0.5)
+                dir = -1;
+              else if (otherCar.offset < -0.5)
+                dir = 1;
+              else
+                dir = (car.offset > otherCar.offset) ? 1 : -1;
+              return dir * 1/i * (car.speed-otherCar.speed)/maxSpeed;
+            }
+          }
+        }
+        // if no cars ahead, but I have somehow ended up off road, then steer back on
+        if (car.offset < -0.9)
+          return 0.1f;
+        else if (car.offset > 0.9)
+          return -0.1f;
+        else
+          return 0;
+      }	
+	
 	void draw(float dt)
 	{
 		int n;
@@ -496,11 +562,11 @@ public class MainGameScreen implements Screen {
 		Gdx.gl.glClearColor(114f / 255, 215 / 255f, 238/ 255f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		renderer.startRenderSequence();
+		Render.instance.startRenderSequence();
 		
-		renderer.background(width, height, 0, skyOffset,  resolution * skySpeed  * playerY);//BACKGROUND.SKY);
-		renderer.background(width, height, 1, hillOffset, resolution * hillSpeed * playerY);
-		renderer.background(width, height, 2, treeOffset, resolution * treeSpeed * playerY);
+		Render.instance.background(width, height, 0, skyOffset,  resolution * skySpeed  * playerY);//BACKGROUND.SKY);
+		Render.instance.background(width, height, 1, hillOffset, resolution * hillSpeed * playerY);
+		Render.instance.background(width, height, 2, treeOffset, resolution * treeSpeed * playerY);
 
 		for(n = 0 ; n < drawDistance; n++) {
 
@@ -520,7 +586,7 @@ public class MainGameScreen implements Screen {
 	            (segment.p2.screen.y >= maxy))                  // clip by (already rendered) hill
 	          continue;
 
-			renderer.segment(width, lanes, segment);
+	        Render.instance.segment(width, lanes, segment);
 
 			maxy = segment.p1.screen.y;
 		}
@@ -528,12 +594,22 @@ public class MainGameScreen implements Screen {
 	      for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
 	        segment = segments.get((baseSegment.index + n) % segments.size());
 
+
+	        for(Car car : segment.cars) 
+	        {
+	          String spriteName      = car.spriteName;
+	          float spriteScale = Util.interpolate(segment.p1.screenScale, segment.p2.screenScale, car.percent);
+	          float spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
+	          float spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
+	          Render.instance.sprite(width, height, resolution, roadWidth, spriteName, spriteScale, spriteX, spriteY, -0.5f, -1, segment.clip);
+	        }	        
+	        
 	        for(SpriteWrapper sprite : segment.sprites) {
 		          
 		          float spriteScale = segment.p1.screenScale;
 		          float spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
 		          float spriteY     = segment.p1.screen.y;
-		          renderer.sprite(width, height, resolution, roadWidth , sprite.sprite, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+		          Render.instance.sprite(width, height, resolution, roadWidth , sprite.sprite, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
 		    }
 	        
 /*
@@ -565,7 +641,7 @@ public class MainGameScreen implements Screen {
 */	        
 	        if (segment == playerSegment) 
 	        {
-	        	renderer.player(width, height, resolution, roadWidth, speed/maxSpeed,
+	        	Render.instance.player(width, height, resolution, roadWidth, speed/maxSpeed,
 	                        cameraDepth/playerZ,
 	                        width/2,
 	                        (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
@@ -575,7 +651,7 @@ public class MainGameScreen implements Screen {
 	        
 	      }
 	      
-	      renderer.finishRenderSequence();
+	      Render.instance.finishRenderSequence();
 
 /*		
 		renderer.player(width, height, resolution, roadWidth, sprites, speed/maxSpeed,

@@ -14,6 +14,7 @@ public class RoadSegment {
 	{
 		String sprite;
 		float  offset;
+		float width;
 		
 	}
 	
@@ -31,12 +32,12 @@ public class RoadSegment {
 	TextureRegion textureRumble;
 	TextureRegion textureGrass;
 	TextureRegion textureLane;
-
 	
 	public float curve;
 	public float clip;
 	
 	Vector<SpriteWrapper> sprites = new Vector<SpriteWrapper>();
+	Vector<Car> cars = new Vector<Car>();
 
 	public RoadSegment(int n, float segmentLength, float p1y, float p2y) {
 		index = n;
@@ -85,6 +86,7 @@ public class RoadSegment {
 		SpriteWrapper w = new SpriteWrapper();
 		w.sprite = spriteName;
 		w.offset = offset;
+		w.width = Render.instance.getSpriteWidth(spriteName); 
 		sprites.add(w);
 	}
 }

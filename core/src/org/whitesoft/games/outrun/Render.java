@@ -12,6 +12,13 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class Render {
 	
+	public static Render instance = null;
+	
+	public static void initialize(ShapeRenderer sr)
+	{
+		instance = new Render(sr);
+	}
+	
 	ShapeRenderer renderer;
 
 	PolygonSprite poly;
@@ -152,7 +159,10 @@ public class Render {
 	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
 		Sprite sprite = atlas.createSprite(spriteName);
 		if (sprite == null)
+		{
 			System.out.println(spriteName);
+			return;
+		}
 		sprite.flip(false, true);
 		//  scale for projection AND relative to roadWidth (for tweakUI)
 		float destW  = (sprite.getWidth()  * scale * width/2) * (spriteScale * roadWidth);
@@ -191,6 +201,14 @@ public class Render {
 		backgroundSprites[layer].draw(polyBatch);
 		backgroundSprites[layer].setPosition(backgroundSprites[layer].getWidth()-sourceX, offset);
 		backgroundSprites[layer].draw(polyBatch);
+	}
+	
+	public float getSpriteWidth(String spriteName)
+	{
+		Sprite sprite = atlas.createSprite(spriteName);
+		if (sprite != null)
+			return sprite.getWidth();
+		return 0;
 	}
 }
 

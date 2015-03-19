@@ -337,6 +337,57 @@ public class MainGameScreen implements Screen {
 		trackLength = segments.size() * segmentLength;
 	}
 	
+	class Car
+	{
+		float offset;
+		String spriteName;
+		float speed;
+	}
+	
+	Vector<Car> cars;
+	
+	void resetCars()
+	{
+		cars = new Vector<Car>();
+//	       car, segment, offset, z, sprite, speed;
+		String [] carNames = { "car01","car02", "car03", "car04", "truck", "semi"} ;		 
+		int segment;
+		float offset, z, speed;
+		String spriteName;
+		for (int n = 0 ; n < totalCars ; n++) 
+		{
+			int neg = Util.randomInt(0,  1);
+	        offset = (float) (Math.random() * 0.8f * (neg == 1 ? 1 : -1));
+	        z      = (float) (Math.floor(Math.random() * segments.size()) * segmentLength);
+/*
+ * 	        sprite = Util.randomChoice(SPRITES.CARS);
+
+	        speed  = maxSpeed/4 + Math.random() * maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);
+	        car = { offset: offset, z: z, sprite: sprite, speed: speed };
+	        segment = findSegment(car.z);
+	        segment.cars.push(car);
+	        cars.push(car);
+*/	    
+		}
+		
+		
+/*
+      cars = [];
+      var n, car, segment, offset, z, sprite, speed;
+      for (var n = 0 ; n < totalCars ; n++) {
+        offset = Math.random() * Util.randomChoice([-0.8, 0.8]);
+        z      = Math.floor(Math.random() * segments.length) * segmentLength;
+        sprite = Util.randomChoice(SPRITES.CARS);
+        speed  = maxSpeed/4 + Math.random() * maxSpeed/(sprite == SPRITES.SEMI ? 4 : 2);
+        car = { offset: offset, z: z, sprite: sprite, speed: speed };
+        segment = findSegment(car.z);
+        segment.cars.push(car);
+        cars.push(car);
+      }		
+ */
+		
+	}
+	
 	void resetSprites()
 	{
 		int [] posNegChoice = {-1, 1 };
@@ -383,23 +434,6 @@ public class MainGameScreen implements Screen {
 	    	}
 
 	    }
-		
-		/*
-      for(n = 200 ; n < segments.length ; n += 3) {
-        addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
-      }
-      var side, sprite, offset;
-      for(n = 1000 ; n < (segments.length-50) ; n += 100) {
-        side      = Util.randomChoice([1, -1]);
-        addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side);
-        for(i = 0 ; i < 20 ; i++) {
-          sprite = Util.randomChoice(SPRITES.PLANTS);
-          offset = side * (1.5 + Math.random());
-          addSprite(n + Util.randomInt(0, 50), sprite, offset);
-        }
-          
-      }
- */
 	}
 
 	RoadSegment findSegment(float z) {

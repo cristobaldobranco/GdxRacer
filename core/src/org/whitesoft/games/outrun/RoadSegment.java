@@ -1,9 +1,10 @@
 package org.whitesoft.games.outrun;
 
+import java.util.Vector;
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
@@ -11,8 +12,8 @@ public class RoadSegment {
 
 	class SpriteWrapper
 	{
-		Sprite sprite;
-		float offset;
+		String sprite;
+		float  offset;
 		
 	}
 	
@@ -35,13 +36,17 @@ public class RoadSegment {
 	public float curve;
 	public float clip;
 	
-	
-//	Vector<SpriteWrapper> sprites = new Vector<SpriteWrapper>();
+	Vector<SpriteWrapper> sprites = new Vector<SpriteWrapper>();
 
 	public RoadSegment(int n, float segmentLength, float p1y, float p2y) {
 		index = n;
 		p1 = new RoadSegmentPoint(n,     segmentLength, p1y);
 		p2 = new RoadSegmentPoint(n + 1, segmentLength, p2y);
+	}
+	
+	public void setUniColor(Color c)
+	{
+		setColors(c, c, c, c);
 	}
 	
 	public void setColors(Color r, Color ru, Color g, Color l)
@@ -50,7 +55,7 @@ public class RoadSegment {
 		colorRumble = ru;
 		colorGrass = g;
 		colorLane = l;
-
+		
 		Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
 		pix.setColor(r);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
 		pix.fill();
@@ -74,13 +79,13 @@ public class RoadSegment {
 		pix.fill();
 		textureSolid = new Texture(pix);
 		textureLane = new TextureRegion(textureSolid);
-}
+	}
 
-	public void addSprite(Sprite sprite, float offset) {
+	public void addSprite(String spriteName, float offset) {
 		SpriteWrapper w = new SpriteWrapper();
-		w.sprite = sprite;
+		w.sprite = spriteName;
 		w.offset = offset;
-//		sprites.add(w);
+		sprites.add(w);
 	}
 }
 

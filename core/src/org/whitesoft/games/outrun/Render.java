@@ -1,21 +1,14 @@
 package org.whitesoft.games.outrun;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.rahul.libgdx.parallax.ParallaxBackground;
-import com.rahul.libgdx.parallax.TextureRegionParallaxLayer;
-import com.rahul.libgdx.parallax.Utils.WH;
 
 public class Render {
 	
@@ -36,8 +29,6 @@ public class Render {
 	Sprite playerSprite;
 	
 	Sprite [] backgroundSprites;
-
-	ParallaxBackground parallaxBackground;
 
 	private TextureRegion treesRegion;
 
@@ -160,6 +151,8 @@ public class Render {
 	
 	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
 		Sprite sprite = atlas.createSprite(spriteName);
+		if (sprite == null)
+			System.out.println(spriteName);
 		sprite.flip(false, true);
 		//  scale for projection AND relative to roadWidth (for tweakUI)
 		float destW  = (sprite.getWidth()  * scale * width/2) * (spriteScale * roadWidth);
@@ -192,37 +185,12 @@ public class Render {
 */
 	public void background(int width, int height, int layer, float rotation, float offset) 
 	{
-		float imageW = backgroundSprites[layer].getWidth() / 2;
-		float imageH = backgroundSprites[layer].getHeight();
-		
 		float sourceX = (float) Math.floor(backgroundSprites[layer].getWidth() * rotation);
-		float sourceY = 0;
-		float sourceW = Math.min(backgroundSprites[layer].getWidth() - sourceX, imageW);
-		float sourceH = backgroundSprites[layer].getHeight();
-
-/*	    var sourceX = layer.x + Math.floor(layer.w * rotation);
-	    var sourceY = layer.y
-	    var sourceW = Math.min(imageW, layer.x+layer.w-sourceX);
-	    var sourceH = imageH;
-	    
-	    var destX = 0;
-	    var destY = offset;
-	    var destW = Math.floor(width * (sourceW/imageW));
-	    var destH = height;
-
-	    ctx.drawImage(background, sourceX, sourceY, sourceW, sourceH, destX, destY, destW, destH);
-	    if (sourceW < imageW)
-	      ctx.drawImage(background, layer.x, sourceY, imageW-sourceW, sourceH, destW-1, destY, width-destW, destH);		
-*/		
 		
-		float destX = 0;
-		float destY = offset;
-		float destW = (float) Math.floor(width * (sourceW/imageW));
-		float destH = height;
-
-		backgroundSprites[layer].setBounds(destX, destY, destW, destH);
+		backgroundSprites[layer].setPosition(-sourceX, offset); 
 		backgroundSprites[layer].draw(polyBatch);
-		
+		backgroundSprites[layer].setPosition(backgroundSprites[layer].getWidth()-sourceX, offset);
+		backgroundSprites[layer].draw(polyBatch);
 	}
 }
 

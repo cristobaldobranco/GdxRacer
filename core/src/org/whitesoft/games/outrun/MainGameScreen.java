@@ -2,6 +2,8 @@ package org.whitesoft.games.outrun;
 
 import java.util.Vector;
 
+import org.whitesoft.games.outrun.RoadSegment.SpriteWrapper;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
@@ -12,13 +14,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.rahul.libgdx.parallax.ParallaxBackground;
-import com.rahul.libgdx.parallax.TextureRegionParallaxLayer;
-import com.rahul.libgdx.parallax.Utils.WH;
 
 public class MainGameScreen implements Screen {
 	
@@ -230,7 +226,7 @@ public class MainGameScreen implements Screen {
     
 */   
 	
-	private void addSprite(int n, Sprite sprite, float offset)
+	private void addSprite(int n, String sprite, float offset)
 	{
 		segments.get(n).addSprite(sprite, offset);
 	}
@@ -331,15 +327,80 @@ public class MainGameScreen implements Screen {
 	      addStraight(0);
 	      addSCurves();
 	      addDownhillToEnd(0);
-//	      resetSprites();
+	      resetSprites();
 //	      resetCars();
 
-		segments.get(findSegment(playerZ).index + 2).colorRoad = Color.WHITE;
-		segments.get(findSegment(playerZ).index + 3).colorRoad = Color.WHITE;
-		for(int n = 0 ; n < rumbleLength ; n++)
-			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
+		segments.get(findSegment(playerZ).index + 2).setUniColor(Color.WHITE);
+		segments.get(findSegment(playerZ).index + 3).setUniColor(Color.WHITE);
+//		for(int n = 0 ; n < rumbleLength ; n++)
+//			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
 
 		trackLength = segments.size() * segmentLength;
+	}
+	
+	void resetSprites()
+	{
+		int [] posNegChoice = {-1, 1 };
+		String [] plants = { "tree1","tree2", "dead_tree1", "dead_tree2", "palm_tree", "bush1", "bush2", "cactus", "stump", "boulder1", "boulder2", "boulder3" } ;    
+ 
+		int n, i;
+		segments.get( 20).addSprite("billboard07", -1);
+		segments.get( 40).addSprite("billboard06", -1);
+		segments.get( 60).addSprite("billboard08", -1);
+		segments.get( 80).addSprite("billboard09", -1);
+		segments.get(100).addSprite("billboard01", -1);
+		segments.get(120).addSprite("billboard02", -1);
+		segments.get(140).addSprite("billboard03", -1);
+		segments.get(160).addSprite("billboard04", -1);
+		segments.get(180).addSprite("billboard05", -1);
+		segments.get(240).addSprite("billboard07", -1.2f);
+		segments.get(240).addSprite("billboard06", 1.2f);		
+		segments.get(segments.size() - 25).addSprite("billboard07", -1.2f);
+		segments.get(segments.size() - 25).addSprite("billboard07", 1.2f);		
+		
+		for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) 
+		{
+			segments.get(n).addSprite("palm_tree", (float) (0.5f + Math.random()*0.5f)); 
+			segments.get(n).addSprite("palm_tree", (float) (  1f + Math.random()*  2f));
+	    }
+	    for(n = 250 ; n < 1000 ; n += 5) 
+	    {
+	    	segments.get(n).addSprite("column", 1.1f);
+	    	segments.get(n + Util.randomInt(0,5)).addSprite("tree1", (float) (-1 - (Math.random() * 2)));
+	    	segments.get(n + Util.randomInt(0,5)).addSprite("tree2", (float) (-1 - (Math.random() * 2)));
+        }
+	    for(n = 200 ; n < segments.size() ; n += 3) {
+	    	segments.get(n).addSprite(plants[Util.randomInt(0, plants.length - 1)], (float) (Util.randomChoice(posNegChoice) * (2 + Math.random() * 5))); 
+	    }
+	    for(n = 1000 ; n < (segments.size()-50) ; n += 100) 
+	    {
+	    	int side      = Util.randomChoice(posNegChoice);
+	    	segments.get(n + Util.randomInt(0, 50)).addSprite("billboard0" + Util.randomInt(1, 9), -side);
+
+	    	for(i = 0 ; i < 20 ; i++) {
+	    		String s = plants[Util.randomInt(0, plants.length - 1)];
+	    		float offset = (float) (side * (1.5 + Math.random()));
+		    	segments.get(n + Util.randomInt(0, 50)).addSprite(s, offset); 
+	    	}
+
+	    }
+		
+		/*
+      for(n = 200 ; n < segments.length ; n += 3) {
+        addSprite(n, Util.randomChoice(SPRITES.PLANTS), Util.randomChoice([1,-1]) * (2 + Math.random() * 5));
+      }
+      var side, sprite, offset;
+      for(n = 1000 ; n < (segments.length-50) ; n += 100) {
+        side      = Util.randomChoice([1, -1]);
+        addSprite(n + Util.randomInt(0, 50), Util.randomChoice(SPRITES.BILLBOARDS), -side);
+        for(i = 0 ; i < 20 ; i++) {
+          sprite = Util.randomChoice(SPRITES.PLANTS);
+          offset = side * (1.5 + Math.random());
+          addSprite(n + Util.randomInt(0, 50), sprite, offset);
+        }
+          
+      }
+ */
 	}
 
 	RoadSegment findSegment(float z) {
@@ -383,8 +444,6 @@ public class MainGameScreen implements Screen {
 	    hillOffset = Util.increase(hillOffset, hillSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 	    treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 	    
-//	    System.out.println(treeOffset);
-
 	}
 
 	void draw(float dt)
@@ -420,9 +479,6 @@ public class MainGameScreen implements Screen {
 			Util.project(segment.p1, (playerX * roadWidth) - x,      playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 	        Util.project(segment.p2, (playerX * roadWidth) - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 			
-//			Util.project(segment.p1, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-//			Util.project(segment.p2, (playerX * roadWidth), cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-	        
 	        x = x + dx;
 	        dx = dx + segment.curve;
 
@@ -436,11 +492,17 @@ public class MainGameScreen implements Screen {
 			maxy = segment.p1.screen.y;
 		}
 		
-//		System.out.println(1/dt + ", " + (baseSegment.index + drawDistance - 1) % segments.size() + ", " + segments.size());
-
 	      for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
 	        segment = segments.get((baseSegment.index + n) % segments.size());
 
+	        for(SpriteWrapper sprite : segment.sprites) {
+		          
+		          float spriteScale = segment.p1.screenScale;
+		          float spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
+		          float spriteY     = segment.p1.screen.y;
+		          renderer.sprite(width, height, resolution, roadWidth , sprite.sprite, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+		    }
+	        
 /*
 	        for(i = 0 ; i < segment.cars.length ; i++) {
 	          car         = segment.cars[i];
@@ -450,6 +512,8 @@ public class MainGameScreen implements Screen {
 	          spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
 	          Render.sprite(ctx, width, height, resolution, roadWidth, sprites, car.sprite, spriteScale, spriteX, spriteY, -0.5, -1, segment.clip);
 	        }
+	        
+	        
 	        for(i = 0 ; i < segment.sprites.length ; i++) {
 	          sprite      = segment.sprites[i];
 	          spriteScale = segment.p1.screen.scale;

@@ -5,7 +5,6 @@ import java.util.Vector;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class RoadSegment {
@@ -15,7 +14,6 @@ public class RoadSegment {
 		String sprite;
 		float  offset;
 		float width;
-		
 	}
 	
 	public boolean looped = false;
@@ -58,25 +56,25 @@ public class RoadSegment {
 		colorLane = l;
 		
 		Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pix.setColor(r);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
+		pix.setColor(r);
 		pix.fill();
 		Texture textureSolid = new Texture(pix);
 		textureRoad = new TextureRegion(textureSolid);
 
 		pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pix.setColor(ru);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
+		pix.setColor(ru);
 		pix.fill();
 		textureSolid = new Texture(pix);
 		textureRumble = new TextureRegion(textureSolid);
 
 		pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pix.setColor(g);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
+		pix.setColor(g);
 		pix.fill();
 		textureSolid = new Texture(pix);
 		textureGrass = new TextureRegion(textureSolid);
 
 		pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-		pix.setColor(l);//.setColor(0xDEADBEFF); // DE is red, AD is green and BE is blue.
+		pix.setColor(l);
 		pix.fill();
 		textureSolid = new Texture(pix);
 		textureLane = new TextureRegion(textureSolid);

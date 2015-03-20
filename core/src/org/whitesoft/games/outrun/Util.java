@@ -38,6 +38,11 @@ public class Util {
 		p.screen.w     = Math.round(             (p.screen.scale * roadWidth   * width/2));
 	},
 */	
+	public static boolean overlap(float x1, float w1, float x2, float w2) {
+		return overlap(x1, w1, x2, w2, 1);
+	}
+
+	
 	public static boolean overlap(float x1, float w1, float x2, float w2, float percent) {
 		float half = percent/2;
 		float min1 = x1 - (w1*half);

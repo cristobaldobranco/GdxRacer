@@ -82,9 +82,15 @@ public class MainGameScreen implements Screen {
     int totalCars      = 200;                     // total number of cars on the road
     float currentLapTime = 0;                       // current lap time
     float lastLapTime    = 0;                    // last lap time
+    float endgameTimer = 0;
 	
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
+	private boolean raceStarted = false;
+	private int startSegment;
+	private boolean raceTimeUp = false;
+	private boolean checkpointFired = false;
+	private boolean gameOver = false;
 	
 	public MainGameScreen(Game game)
 	{
@@ -230,6 +236,7 @@ public class MainGameScreen implements Screen {
 	      resetSprites();
 	      resetCars();
 
+	      startSegment = findSegment(playerZ).index + 2;
 		segments.get(findSegment(playerZ).index + 2).setUniColor(Color.WHITE);
 		segments.get(findSegment(playerZ).index + 3).setUniColor(Color.WHITE);
 //		for(int n = 0 ; n < rumbleLength ; n++)
@@ -370,6 +377,24 @@ public class MainGameScreen implements Screen {
 				}
 			}
 		}
+		
+		if (playerSegment.index == startSegment)
+		{
+			if (!checkpointFired )
+			{
+				raceStarted = true;
+				raceTimeUp = false;
+				endgameTimer += 5;
+				checkpointFired = true;
+			}
+		}
+		else
+		{
+			checkpointFired = false;
+		}
+		
+		if (raceTimeUp && speed <= 0)
+			gameOver = true;
 
 		playerX = Util.limit(playerX, -2, 2);     // dont ever let player go too far out of bounds
 		speed   = Util.limit(speed, 0, maxSpeed); // or exceed maxSpeed
@@ -519,22 +544,54 @@ public class MainGameScreen implements Screen {
 	        }
 	        
 	      }
-     
+	      
+	      Render.instance.text(Integer.toString(endgameTimer < 0 ? 0 : (int) endgameTimer), 300, 50);
+	      
+	      if (gameOver )
+	      {
+	    	  Render.instance.text("GAME OVER!", 200, 200);
+	      }
+	      
 	      Render.instance.finishRenderSequence();
 	}
 	
 		@Override
 	public void render(float delta) {
 		getInput();
+		updateGameStats(delta);
 		updateGameWorld(delta);
 		draw(delta);
 	}
 
-	private void getInput() {
-		keyFaster = Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP) ;
-		keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) ;
-		keyLeft   = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT) ;
-		keyRight  = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT) ;
+	private void updateGameStats(float delta) 
+	{
+		if (raceStarted)
+		{
+			endgameTimer -= delta;
+			if (endgameTimer < 0)
+			{
+				raceTimeUp = true;
+			}
+		}
+	}
+
+	private void getInput() 
+	{
+		if (!gameOver)
+		{
+			if (!raceTimeUp)
+			{
+				keyFaster = Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP) ;
+			}
+			else
+			{
+				keyFaster = false;
+			}
+			keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) ;
+			keyLeft   = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT) ;
+			keyRight  = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT) ;
+		}
+		
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
 			Gdx.app.exit();
 	}

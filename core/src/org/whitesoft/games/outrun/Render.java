@@ -2,6 +2,7 @@ package org.whitesoft.games.outrun;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
@@ -9,6 +10,10 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class Render {
 	
@@ -40,7 +45,13 @@ public class Render {
 	private TextureRegion skyRegion;
 	private TextureRegion mountainsRegion;
 	private Texture backgrounds;	
+	BitmapFont font;
 	
+	Skin skin;
+	Table table;
+	Label timeRemainingLabel;
+	// table.align(Align.right | Align.bottom);
+
 	private Render(ShapeRenderer shapeRenderer) 
 	{
 		renderer = shapeRenderer;
@@ -49,7 +60,27 @@ public class Render {
 		atlas = new TextureAtlas(Gdx.files.internal("sprites.atlas"));
 		spriteScale = (float) 0.3 * (1f / atlas.findRegion("player_straight").getRegionWidth());
 		createBackgrounds();
+		
+		skin = new Skin(Gdx.files.internal("uiskin.json"));		
+		font = new BitmapFont(Gdx.files.internal("font.fnt"),Gdx.files.internal("font.png"),true);
+		
+		table = new Table();
+		table.setFillParent(true);
+		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//		table.setPosition(190, 142);
+		// table.align(Align.right | Align.bottom);
+
+		table.debug();
+
+		LabelStyle style = new LabelStyle(font, null);
+		timeRemainingLabel = new Label("", style);
+
+		table.top().center();
+		table.add(timeRemainingLabel).expandX();
+		
 	}
+	
+	
 	
 	private void createBackgrounds() 
 	{
@@ -182,6 +213,14 @@ public class Render {
 		if (sprite != null)
 			return sprite.getWidth();
 		return 0;
+	}
+	
+	public void text(String txt, int x, int y)
+	{
+		timeRemainingLabel.setText(txt);
+		table.draw(polyBatch, 1);
+		
+//		font.draw(polyBatch, txt, x, y);
 	}
 }
 

@@ -16,12 +16,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class MainGameScreen implements Screen {
-	
+
 	static int LENGTH_NONE = 0;
 	static int LENGTH_SHORT = 25;
 	static int LENGTH_MEDIUM = 50;
 	static int LENGTH_LONG = 100;
-	
+
 	static int HILL_NONE = 0;
 	static int HILL_LOW  = 20;
 	static int HILL_MEDIUM = 40;
@@ -31,6 +31,13 @@ public class MainGameScreen implements Screen {
 	static int CURVE_EASY = 2;
 	static int CURVE_MEDIUM = 4;
 	static int CURVE_HARD = 6;
+
+	enum RaceState {
+		RACE_STATE_PRERACE,
+		RACE_STATE_RACE,
+		RACE_STATE_TIMEUP,
+		RACE_STATE_GAMEOVER
+	}
 
 	Game game;
 	SpriteBatch batch;
@@ -42,7 +49,7 @@ public class MainGameScreen implements Screen {
 	int height        = 768;                     // logical canvas height
 	float resolution;
 	Vector<RoadSegment> segments;                      // array of road segments
-	
+
 	Vector<Car> cars;
 
 	float roadWidth     = 2000;                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
@@ -72,33 +79,37 @@ public class MainGameScreen implements Screen {
 	boolean keyFaster     = false;
 	boolean keySlower     = false;
 
-    float centrifugal    = 0.3f;                     // centrifugal force multiplier when going around curves
-    float skySpeed       = 0.001f;                   // background sky layer scroll speed when going around curve (or up hill)
-    float hillSpeed      = 0.002f;                   // background hill layer scroll speed when going around curve (or up hill)
-    float treeSpeed      = 0.003f;                   // background tree layer scroll speed when going around curve (or up hill)
-    float skyOffset      = 0;                       // current sky scroll offset
-    float hillOffset     = 0;                       // current hill scroll offset
-    float treeOffset     = 0;                       // current tree scroll offset
-    int totalCars      = 200;                     // total number of cars on the road
-    float currentLapTime = 0;                       // current lap time
-    float lastLapTime    = 0;                    // last lap time
-    float endgameTimer = 0;
+	float centrifugal    = 0.3f;                     // centrifugal force multiplier when going around curves
+	float skySpeed       = 0.001f;                   // background sky layer scroll speed when going around curve (or up hill)
+	float hillSpeed      = 0.002f;                   // background hill layer scroll speed when going around curve (or up hill)
+	float treeSpeed      = 0.003f;                   // background tree layer scroll speed when going around curve (or up hill)
+	float skyOffset      = 0;                       // current sky scroll offset
+	float hillOffset     = 0;                       // current hill scroll offset
+	float treeOffset     = 0;                       // current tree scroll offset
+	int totalCars      = 200;                     // total number of cars on the road
+	float currentLapTime = 0;                       // current lap time
+	float lastLapTime    = 0;                    // last lap time
+//	float endgameTimer = 0;
+	int lapNumber = 0;
 	
+	GameStats gameStats = new GameStats();
+
 	private OrthographicCamera camera;
 	private ShapeRenderer shapeRenderer;
-	private boolean raceStarted = false;
+	//	private boolean raceStarted = false;
 	private int startSegment;
-	private boolean raceTimeUp = false;
+	//	private boolean raceTimeUp = false;
 	private boolean checkpointFired = false;
-	private boolean gameOver = false;
-	
+	//	private boolean gameOver = false;
+	RaceState raceState = RaceState.RACE_STATE_PRERACE;
+
 	public MainGameScreen(Game game)
 	{
 		this.game = game;
-		
+
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
-		
+
 		camera = new OrthographicCamera(width, height);
 		camera.setToOrtho(true);		
 		camera.update();
@@ -110,16 +121,16 @@ public class MainGameScreen implements Screen {
 
 		reset();
 	}
-	
+
 	//=========================================================================
 	// BUILD ROAD GEOMETRY
 	//=========================================================================
 
-	
+
 	private float lastY() {
 		return (segments.size() == 0) ? 0 : segments.get(segments.size()-1).p2.world.y;
 	}
-	
+
 	private void addSegment(float curve, float y) {
 		int n = segments.size();
 		RoadSegment segment = new RoadSegment(n, segmentLength, lastY(), y);
@@ -127,124 +138,124 @@ public class MainGameScreen implements Screen {
 		segment.setColors(
 				Math.floor(n/rumbleLength)%2 == 0 ? 
 						Colors.getColor("DARKROAD") : Colors.getColor("LIGHTROAD"), 
-				Math.floor(n/rumbleLength)%2 == 0 ? 
-						Colors.getColor("DARKRUMBLE") : Colors.getColor("LIGHTRUMBLE"), 
-				Math.floor(n/rumbleLength)%2 == 0 ? 
-						Colors.getColor("DARKGRASS") : Colors.getColor("LIGHTGRASS"),
-				Math.floor(n/rumbleLength)%2 == 0 ? 
-						Colors.getColor("DARKLANE") : Colors.getColor("LIGHTLANE"));
+						Math.floor(n/rumbleLength)%2 == 0 ? 
+								Colors.getColor("DARKRUMBLE") : Colors.getColor("LIGHTRUMBLE"), 
+								Math.floor(n/rumbleLength)%2 == 0 ? 
+										Colors.getColor("DARKGRASS") : Colors.getColor("LIGHTGRASS"),
+										Math.floor(n/rumbleLength)%2 == 0 ? 
+												Colors.getColor("DARKLANE") : Colors.getColor("LIGHTLANE"));
 
 		segments.add(segment);
 	}
-	
-//	private void addSprite(int n, String sprite, float offset)
-//	{
-//		segments.get(n).addSprite(sprite, offset);
-//	}
-	
-    private void addRoad(float enter, float hold, float leave, float curve, float y)
-    {
-        float startY   = lastY();
-        float endY     = startY + ( (int) y) * segmentLength;
-        float n, total = enter + hold + leave;
-        for(n = 0 ; n < enter ; n++)
-          addSegment(Util.easeIn(0, curve, n/enter), Util.easeInOut(startY, endY, n/total));
-        for(n = 0 ; n < hold  ; n++)
-          addSegment(curve, Util.easeInOut(startY, endY, (enter+n)/total));
-        for(n = 0 ; n < leave ; n++)
-          addSegment(Util.easeInOut(curve, 0, n/leave), Util.easeInOut(startY, endY, (enter+hold+n)/total));
-    }
-    
-    private void addStraight(int num)
-    {
-    	num = (num > 0) ? num : LENGTH_MEDIUM;
-    	addRoad(num, num, num, 0, 0);
-    }
-    
-    private void addHill(int num, float height)
-    {
-    	num = (num > 0) ? num : LENGTH_MEDIUM;
-    	height = (height > 0) ? height : HILL_MEDIUM;
-        addRoad(num, num, num, 0, height);
-    }
-    
-    private void addCurve(int num, float curve, float height)
-    {
-    	num = (num > 0) ? num : LENGTH_MEDIUM;
-    	curve = (curve > 0) ? curve : CURVE_MEDIUM;
-    	height = (height > 0) ? height : HILL_NONE;
-        addRoad(num, num, num, curve, height);
-    }
-    
-    private void addLowRollingHills(int num, float height)
-    {
-    	num = (num > 0) ? num : LENGTH_SHORT;
-    	height = (height > 0) ? height : HILL_LOW;
-        addRoad(num, num, num,  0,                height/2);
-        addRoad(num, num, num,  0,               -height);
-        addRoad(num, num, num,  CURVE_EASY,  height);
-        addRoad(num, num, num,  0,                0);
-        addRoad(num, num, num, -CURVE_EASY,  height/2);
-        addRoad(num, num, num,  0,                0);
-    }
-    
-    private void addSCurves()
-    {
-        addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_NONE);
-        addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_MEDIUM,  HILL_MEDIUM);
-        addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_EASY,   -HILL_LOW);
-        addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_MEDIUM);
-        addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_MEDIUM, -HILL_MEDIUM);
-    }
-    
-    private void addBumps() 
-    {
-        addRoad(10, 10, 10, 0,  5);
-        addRoad(10, 10, 10, 0, -2);
-        addRoad(10, 10, 10, 0, -5);
-        addRoad(10, 10, 10, 0,  8);
-        addRoad(10, 10, 10, 0,  5);
-        addRoad(10, 10, 10, 0, -7);
-        addRoad(10, 10, 10, 0,  5);
-        addRoad(10, 10, 10, 0, -2);
-    }
 
-    private void addDownhillToEnd(int num) {
-    	num = num > 0 ? num : 200;    	
-    	addRoad(num, num, num, -CURVE_EASY, -lastY()/segmentLength);
-    }
+	//	private void addSprite(int n, String sprite, float offset)
+	//	{
+	//		segments.get(n).addSprite(sprite, offset);
+	//	}
+
+	private void addRoad(float enter, float hold, float leave, float curve, float y)
+	{
+		float startY   = lastY();
+		float endY     = startY + ( (int) y) * segmentLength;
+		float n, total = enter + hold + leave;
+		for(n = 0 ; n < enter ; n++)
+			addSegment(Util.easeIn(0, curve, n/enter), Util.easeInOut(startY, endY, n/total));
+		for(n = 0 ; n < hold  ; n++)
+			addSegment(curve, Util.easeInOut(startY, endY, (enter+n)/total));
+		for(n = 0 ; n < leave ; n++)
+			addSegment(Util.easeInOut(curve, 0, n/leave), Util.easeInOut(startY, endY, (enter+hold+n)/total));
+	}
+
+	private void addStraight(int num)
+	{
+		num = (num > 0) ? num : LENGTH_MEDIUM;
+		addRoad(num, num, num, 0, 0);
+	}
+
+	private void addHill(int num, float height)
+	{
+		num = (num > 0) ? num : LENGTH_MEDIUM;
+		height = (height > 0) ? height : HILL_MEDIUM;
+		addRoad(num, num, num, 0, height);
+	}
+
+	private void addCurve(int num, float curve, float height)
+	{
+		num = (num > 0) ? num : LENGTH_MEDIUM;
+		curve = (curve > 0) ? curve : CURVE_MEDIUM;
+		height = (height > 0) ? height : HILL_NONE;
+		addRoad(num, num, num, curve, height);
+	}
+
+	private void addLowRollingHills(int num, float height)
+	{
+		num = (num > 0) ? num : LENGTH_SHORT;
+		height = (height > 0) ? height : HILL_LOW;
+		addRoad(num, num, num,  0,                height/2);
+		addRoad(num, num, num,  0,               -height);
+		addRoad(num, num, num,  CURVE_EASY,  height);
+		addRoad(num, num, num,  0,                0);
+		addRoad(num, num, num, -CURVE_EASY,  height/2);
+		addRoad(num, num, num,  0,                0);
+	}
+
+	private void addSCurves()
+	{
+		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_NONE);
+		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_MEDIUM,  HILL_MEDIUM);
+		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_EASY,   -HILL_LOW);
+		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_MEDIUM);
+		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_MEDIUM, -HILL_MEDIUM);
+	}
+
+	private void addBumps() 
+	{
+		addRoad(10, 10, 10, 0,  5);
+		addRoad(10, 10, 10, 0, -2);
+		addRoad(10, 10, 10, 0, -5);
+		addRoad(10, 10, 10, 0,  8);
+		addRoad(10, 10, 10, 0,  5);
+		addRoad(10, 10, 10, 0, -7);
+		addRoad(10, 10, 10, 0,  5);
+		addRoad(10, 10, 10, 0, -2);
+	}
+
+	private void addDownhillToEnd(int num) {
+		num = num > 0 ? num : 200;    	
+		addRoad(num, num, num, -CURVE_EASY, -lastY()/segmentLength);
+	}
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
-	      addStraight(LENGTH_SHORT);
-	      addLowRollingHills(0, 0);
-	      addSCurves();
-	      addCurve(LENGTH_MEDIUM, CURVE_MEDIUM, HILL_LOW);
-	      addBumps();
-	      addLowRollingHills(0,0);
-	      addCurve(LENGTH_LONG*2, CURVE_MEDIUM, HILL_MEDIUM);
-	      addStraight(0);
-	      addHill(LENGTH_MEDIUM, HILL_HIGH);
-	      addSCurves();
-	      addCurve(LENGTH_LONG, -CURVE_MEDIUM, HILL_NONE);
-	      addHill(LENGTH_LONG, HILL_HIGH);
-	      addCurve(LENGTH_LONG, CURVE_MEDIUM, -HILL_LOW);
-	      addBumps();
-	      addHill(LENGTH_LONG, -HILL_MEDIUM);
-	      addStraight(0);
-	      addSCurves();
-	      addDownhillToEnd(0);
-	      resetSprites();
-	      resetCars();
+		addStraight(LENGTH_SHORT);
+		addLowRollingHills(0, 0);
+		addSCurves();
+		addCurve(LENGTH_MEDIUM, CURVE_MEDIUM, HILL_LOW);
+		addBumps();
+		addLowRollingHills(0,0);
+		addCurve(LENGTH_LONG*2, CURVE_MEDIUM, HILL_MEDIUM);
+		addStraight(0);
+		addHill(LENGTH_MEDIUM, HILL_HIGH);
+		addSCurves();
+		addCurve(LENGTH_LONG, -CURVE_MEDIUM, HILL_NONE);
+		addHill(LENGTH_LONG, HILL_HIGH);
+		addCurve(LENGTH_LONG, CURVE_MEDIUM, -HILL_LOW);
+		addBumps();
+		addHill(LENGTH_LONG, -HILL_MEDIUM);
+		addStraight(0);
+		addSCurves();
+		addDownhillToEnd(0);
+		resetSprites();
+		resetCars();
 
-	      startSegment = findSegment(playerZ).index + 2;
+		startSegment = findSegment(playerZ).index + 2;
 		segments.get(findSegment(playerZ).index + 2).setUniColor(Color.WHITE);
 		segments.get(findSegment(playerZ).index + 3).setUniColor(Color.WHITE);
-//		for(int n = 0 ; n < rumbleLength ; n++)
-//			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
+		//		for(int n = 0 ; n < rumbleLength ; n++)
+			//			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
 
 		trackLength = segments.size() * segmentLength;
 	}
-	
+
 	void resetCars()
 	{
 		cars = new Vector<Car>();
@@ -256,29 +267,29 @@ public class MainGameScreen implements Screen {
 		for (int n = 0 ; n < totalCars ; n++) 
 		{
 			int neg = Util.randomInt(0,  1);
-	        offset = (float) (Math.random() * 0.8f * (neg == 1 ? 1 : -1));
-	        z      = (float) (Math.floor(Math.random() * segments.size()) * segmentLength);
+			offset = (float) (Math.random() * 0.8f * (neg == 1 ? 1 : -1));
+			z      = (float) (Math.floor(Math.random() * segments.size()) * segmentLength);
 
- 	        spriteName = carNames[Util.randomInt(0, carNames.length - 1)];
+			spriteName = carNames[Util.randomInt(0, carNames.length - 1)];
 
-	        speed  = (float) (maxSpeed/4 + Math.random() * maxSpeed/(spriteName.equals("semi") ? 4 : 2));
-	        Car car = new Car();
-	        car.offset = offset;
-	        car.spriteName = spriteName;
-	        car.speed = speed;
-	        car.z = z;
-	        car.width = Render.instance.getSpriteWidth(spriteName);
-	        segment = findSegment(car.z);
-	        segment.cars.add(car);
-	        cars.add(car);
+			speed  = (float) (maxSpeed/4 + Math.random() * maxSpeed/(spriteName.equals("semi") ? 4 : 2));
+			Car car = new Car();
+			car.offset = offset;
+			car.spriteName = spriteName;
+			car.speed = speed;
+			car.z = z;
+			car.width = Render.instance.getSpriteWidth(spriteName);
+			segment = findSegment(car.z);
+			segment.cars.add(car);
+			cars.add(car);
 		}
 	}
-	
+
 	void resetSprites()
 	{
 		int [] posNegChoice = {-1, 1 };
 		String [] plants = { "tree1","tree2", "dead_tree1", "dead_tree2", "palm_tree", "bush1", "bush2", "cactus", "stump", "boulder1", "boulder2", "boulder3" } ;    
- 
+
 		int n, i;
 		segments.get( 20).addSprite("billboard07", -1);
 		segments.get( 40).addSprite("billboard06", -1);
@@ -293,39 +304,39 @@ public class MainGameScreen implements Screen {
 		segments.get(240).addSprite("billboard06", 1.2f);		
 		segments.get(segments.size() - 25).addSprite("billboard07", -1.2f);
 		segments.get(segments.size() - 25).addSprite("billboard07", 1.2f);		
-		
+
 		for(n = 10 ; n < 200 ; n += 4 + Math.floor(n/100)) 
 		{
 			segments.get(n).addSprite("palm_tree", (float) (0.5f + Math.random()*0.5f)); 
 			segments.get(n).addSprite("palm_tree", (float) (  1f + Math.random()*  2f));
-	    }
-	    for(n = 250 ; n < 1000 ; n += 5) 
-	    {
-	    	segments.get(n).addSprite("column", 1.1f);
-	    	segments.get(n + Util.randomInt(0,5)).addSprite("tree1", (float) (-1 - (Math.random() * 2)));
-	    	segments.get(n + Util.randomInt(0,5)).addSprite("tree2", (float) (-1 - (Math.random() * 2)));
-        }
-	    for(n = 200 ; n < segments.size() ; n += 3) {
-	    	segments.get(n).addSprite(plants[Util.randomInt(0, plants.length - 1)], (float) (Util.randomChoice(posNegChoice) * (2 + Math.random() * 5))); 
-	    }
-	    for(n = 1000 ; n < (segments.size()-50) ; n += 100) 
-	    {
-	    	int side      = Util.randomChoice(posNegChoice);
-	    	segments.get(n + Util.randomInt(0, 50)).addSprite("billboard0" + Util.randomInt(1, 9), -side);
+		}
+		for(n = 250 ; n < 1000 ; n += 5) 
+		{
+			segments.get(n).addSprite("column", 1.1f);
+			segments.get(n + Util.randomInt(0,5)).addSprite("tree1", (float) (-1 - (Math.random() * 2)));
+			segments.get(n + Util.randomInt(0,5)).addSprite("tree2", (float) (-1 - (Math.random() * 2)));
+		}
+		for(n = 200 ; n < segments.size() ; n += 3) {
+			segments.get(n).addSprite(plants[Util.randomInt(0, plants.length - 1)], (float) (Util.randomChoice(posNegChoice) * (2 + Math.random() * 5))); 
+		}
+		for(n = 1000 ; n < (segments.size()-50) ; n += 100) 
+		{
+			int side      = Util.randomChoice(posNegChoice);
+			segments.get(n + Util.randomInt(0, 50)).addSprite("billboard0" + Util.randomInt(1, 9), -side);
 
-	    	for(i = 0 ; i < 20 ; i++) {
-	    		String s = plants[Util.randomInt(0, plants.length - 1)];
-	    		float offset = (float) (side * (1.5 + Math.random()));
-		    	segments.get(n + Util.randomInt(0, 50)).addSprite(s, offset); 
-	    	}
+			for(i = 0 ; i < 20 ; i++) {
+				String s = plants[Util.randomInt(0, plants.length - 1)];
+				float offset = (float) (side * (1.5 + Math.random()));
+				segments.get(n + Util.randomInt(0, 50)).addSprite(s, offset); 
+			}
 
-	    }
+		}
 	}
 
 	RoadSegment findSegment(float z) {
 		return segments.get((int) (Math.floor(z/segmentLength) % segments.size()));
 	}
-	
+
 	void updateGameWorld(float dt) 
 	{
 		RoadSegment playerSegment = findSegment(position + playerZ);		
@@ -333,7 +344,7 @@ public class MainGameScreen implements Screen {
 		float speedPercent  = speed/maxSpeed;
 		float playerW       = Render.instance.getSpriteWidth("player_straight") * spriteScale;
 		updateCars(dt, playerSegment, playerW);
-		
+
 		position = Util.increase(position, dt * speed, trackLength);
 
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
@@ -342,7 +353,7 @@ public class MainGameScreen implements Screen {
 			playerX = playerX - dx;
 		else if (keyRight)
 			playerX = playerX + dx;
-		
+
 		playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);		
 
 		if (keyFaster)
@@ -356,17 +367,25 @@ public class MainGameScreen implements Screen {
 			if (speed > offRoadLimit) {
 				speed = Util.accelerate(speed, offRoadDecel, dt);
 			}
-			
-	        for(SpriteWrapper sprite : playerSegment.sprites) {
-	            float  spriteW = sprite.width * spriteScale;
-	            if (Util.overlap(playerX, playerW, sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1), spriteW)) {
-	              speed = maxSpeed/5;
-	              position = Util.increase(playerSegment.p1.world.z, -playerZ, trackLength); // stop in front of sprite (at front of segment)
-	              break;
-	            }
-	          }			
+
+			for(SpriteWrapper sprite : playerSegment.sprites) {
+				float  spriteW = sprite.width * spriteScale;
+				if (Util.overlap(playerX, playerW, sprite.offset + spriteW/2 * (sprite.offset > 0 ? 1 : -1), spriteW)) 
+				{
+					if  ( (raceState == RaceState.RACE_STATE_TIMEUP) || (raceState == RaceState.RACE_STATE_GAMEOVER) )
+					{
+						speed = 0;
+					}
+					else
+					{
+						speed = maxSpeed/5;
+					}
+					position = Util.increase(playerSegment.p1.world.z, -playerZ, trackLength); // stop in front of sprite (at front of segment)
+					break;
+				}
+			}			
 		}
-		
+
 		for(Car car : playerSegment.cars) {
 			float carW = car.width * spriteScale;
 			if (speed > car.speed) {
@@ -377,14 +396,13 @@ public class MainGameScreen implements Screen {
 				}
 			}
 		}
-		
+
 		if (playerSegment.index == startSegment)
 		{
 			if (!checkpointFired )
 			{
-				raceStarted = true;
-				raceTimeUp = false;
-				endgameTimer += 5;
+				raceState = RaceState.RACE_STATE_RACE;
+				gameStats.checkpoint(120);
 				checkpointFired = true;
 			}
 		}
@@ -392,80 +410,80 @@ public class MainGameScreen implements Screen {
 		{
 			checkpointFired = false;
 		}
-		
-		if (raceTimeUp && speed <= 0)
-			gameOver = true;
+
+		if ((raceState == RaceState.RACE_STATE_TIMEUP) && speed <= 0)
+			raceState = RaceState.RACE_STATE_GAMEOVER;
 
 		playerX = Util.limit(playerX, -2, 2);     // dont ever let player go too far out of bounds
 		speed   = Util.limit(speed, 0, maxSpeed); // or exceed maxSpeed
-		
-	    skyOffset  = Util.increase(skyOffset,  skySpeed  * playerSegment.curve * (position-startPosition)/segmentLength, 1);
-	    hillOffset = Util.increase(hillOffset, hillSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
-	    treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
-	    
+
+		skyOffset  = Util.increase(skyOffset,  skySpeed  * playerSegment.curve * (position-startPosition)/segmentLength, 1);
+		hillOffset = Util.increase(hillOffset, hillSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
+		treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
+
 	}
 
 	private void updateCars(float dt, RoadSegment playerSegment, float playerW) {
-        RoadSegment oldSegment, newSegment;
-        for(Car car : cars) 
-        {
-          oldSegment  = findSegment(car.z);
-          car.offset  = car.offset + updateCarOffset(car, oldSegment, playerSegment, playerW);
-          car.z       = Util.increase(car.z, dt * car.speed, trackLength);
-          car.percent = Util.percentRemaining(car.z, segmentLength); // useful for interpolation during rendering phase
-          newSegment  = findSegment(car.z);
-          if (oldSegment != newSegment) {
-            int index = oldSegment.cars.indexOf(car);
-            oldSegment.cars.remove(index);
-            newSegment.cars.add(car);
-          }
-        }
+		RoadSegment oldSegment, newSegment;
+		for(Car car : cars) 
+		{
+			oldSegment  = findSegment(car.z);
+			car.offset  = car.offset + updateCarOffset(car, oldSegment, playerSegment, playerW);
+			car.z       = Util.increase(car.z, dt * car.speed, trackLength);
+			car.percent = Util.percentRemaining(car.z, segmentLength); // useful for interpolation during rendering phase
+			newSegment  = findSegment(car.z);
+			if (oldSegment != newSegment) {
+				int index = oldSegment.cars.indexOf(car);
+				oldSegment.cars.remove(index);
+				newSegment.cars.add(car);
+			}
+		}
 	}
 
 
 	private float updateCarOffset(Car car, RoadSegment carSegment, RoadSegment playerSegment, float playerW) {
-        int i, dir;
-        RoadSegment segment;
-        
-        float otherCarW;
-        int lookahead = 20;
-        float carW = car.width * spriteScale;
-        // optimization, dont bother steering around other cars when 'out of sight' of the player
-        if ((carSegment.index - playerSegment.index) > drawDistance)
-          return 0;
-        for(i = 1 ; i < lookahead ; i++) {
-          segment = segments.get((carSegment.index+i)%segments.size());
-          if ((segment == playerSegment) && (car.speed > speed) && (Util.overlap(playerX, playerW, car.offset, carW, 1.2f))) {
-            if (playerX > 0.5)
-              dir = -1;
-            else if (playerX < -0.5)
-              dir = 1;
-            else
-              dir = (car.offset > playerX) ? 1 : -1;
-            return dir * 1/i * (car.speed-speed)/maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
-          }
-          for(Car otherCar : segment.cars) {
-            otherCarW = otherCar.width * spriteScale;
-            if ((car.speed > otherCar.speed) && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2f)) {
-              if (otherCar.offset > 0.5)
-                dir = -1;
-              else if (otherCar.offset < -0.5)
-                dir = 1;
-              else
-                dir = (car.offset > otherCar.offset) ? 1 : -1;
-              return dir * 1/i * (car.speed-otherCar.speed)/maxSpeed;
-            }
-          }
-        }
-        // if no cars ahead, but I have somehow ended up off road, then steer back on
-        if (car.offset < -0.9)
-          return 0.1f;
-        else if (car.offset > 0.9)
-          return -0.1f;
-        else
-          return 0;
-      }	
-	
+		int i, dir;
+		RoadSegment segment;
+
+		float otherCarW;
+		int lookahead = 20;
+		float carW = car.width * spriteScale;
+		// optimization, dont bother steering around other cars when 'out of sight' of the player
+		if ((carSegment.index - playerSegment.index) > drawDistance)
+			return 0;
+		for(i = 1 ; i < lookahead ; i++) {
+			segment = segments.get((carSegment.index+i)%segments.size());
+			if ((segment == playerSegment) && (car.speed > speed) && (Util.overlap(playerX, playerW, car.offset, carW, 1.2f))) {
+				if (playerX > 0.5)
+					dir = -1;
+				else if (playerX < -0.5)
+					dir = 1;
+				else
+					dir = (car.offset > playerX) ? 1 : -1;
+				return dir * 1/i * (car.speed-speed)/maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
+			}
+			for(Car otherCar : segment.cars) {
+				otherCarW = otherCar.width * spriteScale;
+				if ((car.speed > otherCar.speed) && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2f)) {
+					if (otherCar.offset > 0.5)
+						dir = -1;
+					else if (otherCar.offset < -0.5)
+						dir = 1;
+					else
+						dir = (car.offset > otherCar.offset) ? 1 : -1;
+					return dir * 1/i * (car.speed-otherCar.speed)/maxSpeed;
+				}
+			}
+		}
+		// if no cars ahead, but I have somehow ended up off road, then steer back on
+		if (car.offset < -0.9)
+			return 0.1f;
+		else if (car.offset > 0.9)
+			return -0.1f;
+		else
+			return 0;
+	}	
+
 	void draw(float dt)
 	{
 		int n;
@@ -475,8 +493,8 @@ public class MainGameScreen implements Screen {
 		RoadSegment playerSegment = findSegment(position+playerZ);
 		float maxy        = height;
 		float basePercent   = Util.percentRemaining(position, segmentLength);
-	    float playerPercent = Util.percentRemaining(position+playerZ, segmentLength);
-	    float playerY       = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
+		float playerPercent = Util.percentRemaining(position+playerZ, segmentLength);
+		float playerY       = Util.interpolate(playerSegment.p1.world.y, playerSegment.p2.world.y, playerPercent);
 		float x = 0;
 		float dx = - (baseSegment.curve * basePercent);
 
@@ -484,7 +502,7 @@ public class MainGameScreen implements Screen {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
 		Render.instance.startRenderSequence();
-		
+
 		Render.instance.background(width, height, 0, skyOffset,  resolution * skySpeed  * playerY);//BACKGROUND.SKY);
 		Render.instance.background(width, height, 1, hillOffset, resolution * hillSpeed * playerY);
 		Render.instance.background(width, height, 2, treeOffset, resolution * treeSpeed * playerY);
@@ -497,65 +515,67 @@ public class MainGameScreen implements Screen {
 			segment.clip   = maxy;
 
 			Util.project(segment.p1, (playerX * roadWidth) - x,      playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-	        Util.project(segment.p2, (playerX * roadWidth) - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
-			
-	        x = x + dx;
-	        dx = dx + segment.curve;
+			Util.project(segment.p2, (playerX * roadWidth) - x - dx, playerY + cameraHeight, position - (segment.looped ? trackLength : 0), cameraDepth, width, height, roadWidth);
 
-	        if ((segment.p1.camera.z <= cameraDepth)         || // behind us
-	            (segment.p2.screen.y >= segment.p1.screen.y) || // back face cull
-	            (segment.p2.screen.y >= maxy))                  // clip by (already rendered) hill
-	          continue;
+			x = x + dx;
+			dx = dx + segment.curve;
 
-	        Render.instance.segment(width, lanes, segment);
+			if ((segment.p1.camera.z <= cameraDepth)         || // behind us
+					(segment.p2.screen.y >= segment.p1.screen.y) || // back face cull
+					(segment.p2.screen.y >= maxy))                  // clip by (already rendered) hill
+				continue;
+
+			Render.instance.segment(width, lanes, segment);
 
 			maxy = segment.p1.screen.y;
 		}
-		
-	      for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
-	        segment = segments.get((baseSegment.index + n) % segments.size());
+
+		for(n = (int) (drawDistance-1) ; n > 0 ; n--) {
+			segment = segments.get((baseSegment.index + n) % segments.size());
 
 
-	        for(Car car : segment.cars) 
-	        {
-	          String spriteName      = car.spriteName;
-	          float spriteScale = Util.interpolate(segment.p1.screenScale, segment.p2.screenScale, car.percent);
-	          float spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
-	          float spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
-	          Render.instance.sprite(width, height, resolution, roadWidth, spriteName, spriteScale, spriteX, spriteY, -0.5f, -1, segment.clip);
-	        }	        
-	        
-	        for(SpriteWrapper sprite : segment.sprites) {
-		          
-		          float spriteScale = segment.p1.screenScale;
-		          float spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
-		          float spriteY     = segment.p1.screen.y;
-		          Render.instance.sprite(width, height, resolution, roadWidth , sprite.sprite, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
-		    }
-	        
-	        if (segment == playerSegment) 
-	        {
-	        	Render.instance.player(width, height, resolution, roadWidth, speed/maxSpeed,
-	                        cameraDepth/playerZ,
-	                        width/2,
-	                        (height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
-	                        speed * (keyLeft ? -1 : keyRight ? 1 : 0),
-	                        playerSegment.p2.world.y - playerSegment.p1.world.y);
-	        }
-	        
-	      }
-	      
-	      Render.instance.text(Integer.toString(endgameTimer < 0 ? 0 : (int) endgameTimer), 300, 50);
-	      
-	      if (gameOver )
-	      {
-	    	  Render.instance.text("GAME OVER!", 200, 200);
-	      }
-	      
-	      Render.instance.finishRenderSequence();
+			for(Car car : segment.cars) 
+			{
+				String spriteName      = car.spriteName;
+				float spriteScale = Util.interpolate(segment.p1.screenScale, segment.p2.screenScale, car.percent);
+				float spriteX     = Util.interpolate(segment.p1.screen.x,     segment.p2.screen.x,     car.percent) + (spriteScale * car.offset * roadWidth * width/2);
+				float spriteY     = Util.interpolate(segment.p1.screen.y,     segment.p2.screen.y,     car.percent);
+				Render.instance.sprite(width, height, resolution, roadWidth, spriteName, spriteScale, spriteX, spriteY, -0.5f, -1, segment.clip);
+			}	        
+
+			for(SpriteWrapper sprite : segment.sprites) {
+
+				float spriteScale = segment.p1.screenScale;
+				float spriteX     = segment.p1.screen.x + (spriteScale * sprite.offset * roadWidth * width/2);
+				float spriteY     = segment.p1.screen.y;
+				Render.instance.sprite(width, height, resolution, roadWidth , sprite.sprite, spriteScale, spriteX, spriteY, (sprite.offset < 0 ? -1 : 0), -1, segment.clip);
+			}
+
+			if (segment == playerSegment) 
+			{
+				Render.instance.player(width, height, resolution, roadWidth, speed/maxSpeed,
+						cameraDepth/playerZ,
+						width/2,
+						(height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
+						speed * (keyLeft ? -1 : keyRight ? 1 : 0),
+						playerSegment.p2.world.y - playerSegment.p1.world.y);
+			}
+
+		}
+		Render.instance.finishRenderSequence();
+
+		if (raceState == RaceState.RACE_STATE_GAMEOVER )
+		{
+			Render.instance.text("GAME OVER!", 200, 200);
+		}
+		else
+		{
+			Render.instance.ui(gameStats);
+		}
+
 	}
-	
-		@Override
+
+	@Override
 	public void render(float delta) {
 		getInput();
 		updateGameStats(delta);
@@ -565,21 +585,21 @@ public class MainGameScreen implements Screen {
 
 	private void updateGameStats(float delta) 
 	{
-		if (raceStarted)
+		if (raceState == RaceState.RACE_STATE_RACE)
 		{
-			endgameTimer -= delta;
-			if (endgameTimer < 0)
+			gameStats.update(delta);
+			if (gameStats.isTimeUp())
 			{
-				raceTimeUp = true;
+				raceState = RaceState.RACE_STATE_TIMEUP;
 			}
 		}
 	}
 
 	private void getInput() 
 	{
-		if (!gameOver)
+		if (raceState != RaceState.RACE_STATE_GAMEOVER)
 		{
-			if (!raceTimeUp)
+			if (raceState != RaceState.RACE_STATE_TIMEUP)
 			{
 				keyFaster = Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP) ;
 			}
@@ -591,7 +611,7 @@ public class MainGameScreen implements Screen {
 			keyLeft   = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT) ;
 			keyRight  = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT) ;
 		}
-		
+
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
 			Gdx.app.exit();
 	}
@@ -631,7 +651,7 @@ public class MainGameScreen implements Screen {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	void reset() {
 		cameraDepth            = (float) (1 / Math.tan((fieldOfView/2) * Math.PI/180));
 		playerZ                = (cameraHeight * cameraDepth);

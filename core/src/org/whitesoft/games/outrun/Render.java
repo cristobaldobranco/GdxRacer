@@ -9,7 +9,10 @@ import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -47,11 +50,15 @@ public class Render {
 	private Texture backgrounds;	
 	BitmapFont font;
 	
+	Stage stage = new Stage();
 	Skin skin;
 	Table table;
 	Label timeRemainingLabel;
+	Label lapTimeLabel;
+	Label fastestLapTimeLabel;
+	Label text1, text2, text3;
 	// table.align(Align.right | Align.bottom);
-
+	
 	private Render(ShapeRenderer shapeRenderer) 
 	{
 		renderer = shapeRenderer;
@@ -61,22 +68,52 @@ public class Render {
 		spriteScale = (float) 0.3 * (1f / atlas.findRegion("player_straight").getRegionWidth());
 		createBackgrounds();
 		
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("clacon.ttf"));
+		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
+		parameter.size = 24;
+		BitmapFont font24 = generator.generateFont(parameter); // font size 12 pixels
+
+		parameter.size = 48;
+		BitmapFont font48 = generator.generateFont(parameter); // font size 12 pixels
+		
+		generator.dispose(); // don't forget to dispose to avoid memory leaks!
+		
 		skin = new Skin(Gdx.files.internal("uiskin.json"));		
-		font = new BitmapFont(Gdx.files.internal("font.fnt"),Gdx.files.internal("font.png"),true);
+		font = new BitmapFont(Gdx.files.internal("font.fnt"),Gdx.files.internal("font.png"),false);
 		
 		table = new Table();
+		stage.addActor(table);
 		table.setFillParent(true);
 		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 //		table.setPosition(190, 142);
 		// table.align(Align.right | Align.bottom);
 
+
 		table.debug();
 
-		LabelStyle style = new LabelStyle(font, null);
-		timeRemainingLabel = new Label("", style);
+		LabelStyle style24 = new LabelStyle(font24, null);
+		LabelStyle style48 = new LabelStyle(font48, null);
+		timeRemainingLabel = new Label("", style48);
+		lapTimeLabel = new Label("", style24);
+		fastestLapTimeLabel = new Label("", style24);
+		text1 = new Label("CURRENT LAP", style24);
+		text3 = new Label("FASTEST LAP", style24);
+		text2 = new Label("", style24);
+		
+		table.columnDefaults(0).width(80).padLeft(50);
+		table.columnDefaults(1).expandX();
+		table.columnDefaults(2).width(80).padRight(50);
 
-		table.top().center();
-		table.add(timeRemainingLabel).expandX();
+		table.top();
+		table.add(text1);
+		table.add(text2);
+		table.add(text3);
+		table.row();
+		
+		table.add(lapTimeLabel);
+		table.add(timeRemainingLabel);
+		table.add(fastestLapTimeLabel);
+		table.row();
 		
 	}
 	
@@ -218,9 +255,19 @@ public class Render {
 	public void text(String txt, int x, int y)
 	{
 		timeRemainingLabel.setText(txt);
-		table.draw(polyBatch, 1);
+		stage.draw();
 		
 //		font.draw(polyBatch, txt, x, y);
+	}
+
+
+
+	public void ui(GameStats gameStats) {
+		lapTimeLabel.setText(gameStats.getLapTime());
+		timeRemainingLabel.setText(Integer.toString(gameStats.endgameTimer < 0 ? 0 : (int) gameStats.endgameTimer ));
+		fastestLapTimeLabel.setText(gameStats.getFastestLapTime());
+		stage.draw();
+		
 	}
 }
 

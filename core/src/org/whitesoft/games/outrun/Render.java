@@ -1,6 +1,7 @@
 package org.whitesoft.games.outrun;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
@@ -58,6 +59,9 @@ public class Render {
 	Label fastestLapTimeLabel;
 	Label text1, text2, text3;
 	// table.align(Align.right | Align.bottom);
+
+	Color normalTextColor = new Color(1,1,1,1);
+	Color warningTextColor = new Color(1,0,0,1);
 	
 	private Render(ShapeRenderer shapeRenderer) 
 	{
@@ -71,9 +75,12 @@ public class Render {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("clacon.ttf"));
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		parameter.size = 24;
+		parameter.shadowColor = new Color(0,0,0,1);
+		parameter.shadowOffsetX = 3;
+		parameter.shadowOffsetY = 3;
 		BitmapFont font24 = generator.generateFont(parameter); // font size 12 pixels
 
-		parameter.size = 48;
+		parameter.size = 64;
 		BitmapFont font48 = generator.generateFont(parameter); // font size 12 pixels
 		
 		generator.dispose(); // don't forget to dispose to avoid memory leaks!
@@ -89,7 +96,7 @@ public class Render {
 		// table.align(Align.right | Align.bottom);
 
 
-		table.debug();
+//		table.debug();
 
 		LabelStyle style24 = new LabelStyle(font24, null);
 		LabelStyle style48 = new LabelStyle(font48, null);
@@ -260,10 +267,15 @@ public class Render {
 //		font.draw(polyBatch, txt, x, y);
 	}
 
-
-
 	public void ui(GameStats gameStats) {
 		lapTimeLabel.setText(gameStats.getLapTime());
+		if (gameStats.countdownWarning())
+		{
+			timeRemainingLabel.getStyle().fontColor = warningTextColor;
+		}
+		else
+			timeRemainingLabel.getStyle().fontColor = normalTextColor;
+		
 		timeRemainingLabel.setText(Integer.toString(gameStats.endgameTimer < 0 ? 0 : (int) gameStats.endgameTimer ));
 		fastestLapTimeLabel.setText(gameStats.getFastestLapTime());
 		stage.draw();

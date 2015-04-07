@@ -1,5 +1,9 @@
 package org.whitesoft.games.outrun;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 import java.util.Vector;
 
 import org.whitesoft.games.outrun.RoadSegment.SpriteWrapper;
@@ -16,7 +20,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class MainGameScreen implements Screen {
-
+/*
 	static int LENGTH_NONE = 0;
 	static int LENGTH_SHORT = 25;
 	static int LENGTH_MEDIUM = 50;
@@ -31,7 +35,94 @@ public class MainGameScreen implements Screen {
 	static int CURVE_EASY = 2;
 	static int CURVE_MEDIUM = 4;
 	static int CURVE_HARD = 6;
+*/
+	enum Curve{
+		  NONE(0),
+		  EASY(2),
+		  MEDIUM(4),
+		  HARD(6);
+		  //...
+		  
+		  private float value;
+		  
+		  private Curve (float v)
+		  {
+			  value = v;
+		  }
 
+		  public float getValue()
+		  {
+			  return value;
+		  }
+		  
+		  private static final List<Curve> VALUES =
+		    Collections.unmodifiableList(Arrays.asList(values()));
+		  private static final int SIZE = VALUES.size();
+		  private static final Random RANDOM = new Random();
+
+		  public static Curve randomLetter()  {
+		    return VALUES.get(RANDOM.nextInt(SIZE));
+		  }
+
+	}	
+	
+	enum Hill {
+		  NONE(0),
+		  LOW(20),
+		  MEDIUM(40),
+		  HIGH(60);
+		  //...
+
+		  private float value;
+		  
+		  private Hill (float v)
+		  {
+			  value = v;
+		  }
+
+		  public float getValue()
+		  {
+			  return value;
+		  }
+		  
+		  private static final List<Hill> VALUES =
+		    Collections.unmodifiableList(Arrays.asList(values()));
+		  private static final int SIZE = VALUES.size();
+		  private static final Random RANDOM = new Random();
+
+		  public static Hill randomLetter()  {
+		    return VALUES.get(RANDOM.nextInt(SIZE));
+		  }
+	}		
+	
+	enum Length {
+		  NONE(0),
+		  SHORT(25),
+		  MEDIUM(50),
+		  LONG(100);
+		  //...
+
+		  private int value;
+		  
+		  private Length (int v)
+		  {
+			  value = v;
+		  }
+
+		  public int getValue()
+		  {
+			  return value;
+		  }
+		  
+		  private static final List<Length> VALUES =
+		    Collections.unmodifiableList(Arrays.asList(values()));
+		  private static final int SIZE = VALUES.size();
+		  private static final Random RANDOM = new Random();
+
+		  public static Length randomLetter()  {
+		    return VALUES.get(RANDOM.nextInt(SIZE));
+		  }
+	}		
 	enum RaceState {
 		RACE_STATE_PRERACE,
 		RACE_STATE_RACE,
@@ -168,48 +259,54 @@ public class MainGameScreen implements Screen {
 
 	private void addStraight(int num)
 	{
-		num = (num > 0) ? num : LENGTH_MEDIUM;
+		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
+//		num = (num > 0) ? num : Length.MEDIUM.value;
 		addRoad(num, num, num, 0, 0);
 	}
 
 	private void addHill(int num, float height)
 	{
-		num = (num > 0) ? num : LENGTH_MEDIUM;
-		height = (height > 0) ? height : HILL_MEDIUM;
+		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
+//		num = (num > 0) ? num : Length.MEDIUM.value;
+//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		addRoad(num, num, num, 0, height);
 	}
 
 	private void addCurve(int num, float curve, float height)
 	{
-		num = (num > 0) ? num : LENGTH_MEDIUM;
-		curve = (curve > 0) ? curve : CURVE_MEDIUM;
-		height = (height > 0) ? height : HILL_NONE;
+//		num = (num > 0) ? num : Length.MEDIUM.value;
+		curve = (curve > 0) ? curve : Curve.MEDIUM.value;
+//		height = (height > 0) ? height : Hill.MEDIUM.value;
+		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
 		addRoad(num, num, num, curve, height);
 	}
 
 	private void addLowRollingHills(int num, float height)
 	{
-		num = (num > 0) ? num : LENGTH_SHORT;
-		height = (height > 0) ? height : HILL_LOW;
+		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ")");		
+//		num = (num > 0) ? num : Length.LENGTH_SHORT;
+//		height = (height > 0) ? height : HILL_LOW;
 		addRoad(num, num, num,  0,                height/2);
 		addRoad(num, num, num,  0,               -height);
-		addRoad(num, num, num,  CURVE_EASY,  height);
+		addRoad(num, num, num,  Curve.EASY.value, height);
 		addRoad(num, num, num,  0,                0);
-		addRoad(num, num, num, -CURVE_EASY,  height/2);
+		addRoad(num, num, num, -Curve.EASY.value, height/2);
 		addRoad(num, num, num,  0,                0);
 	}
 
 	private void addSCurves()
 	{
-		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_NONE);
-		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_MEDIUM,  HILL_MEDIUM);
-		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,   CURVE_EASY,   -HILL_LOW);
-		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_EASY,    HILL_MEDIUM);
-		addRoad(LENGTH_MEDIUM, LENGTH_MEDIUM, LENGTH_MEDIUM,  -CURVE_MEDIUM, -HILL_MEDIUM);
+		Gdx.app.log("TrackGen", "addSCurves()");		
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value,    Hill.NONE.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.MEDIUM.value,  Hill.MEDIUM.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.EASY.value,   -Hill.LOW.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value,    Hill.MEDIUM.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.MEDIUM.value, -Hill.MEDIUM.value);
 	}
 
 	private void addBumps() 
 	{
+		Gdx.app.log("TrackGen", "addBumps()");		
 		addRoad(10, 10, 10, 0,  5);
 		addRoad(10, 10, 10, 0, -2);
 		addRoad(10, 10, 10, 0, -5);
@@ -221,29 +318,56 @@ public class MainGameScreen implements Screen {
 	}
 
 	private void addDownhillToEnd(int num) {
+		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
-		addRoad(num, num, num, -CURVE_EASY, -lastY()/segmentLength);
+		addRoad(num, num, num, -Curve.EASY.value, -lastY()/segmentLength);
 	}
+	
+	private void generateRandomTrack(int cutOffLength)
+	{
+		Random rnd = new Random(10);
+		
+		addStraight(Length.randomLetter().value);
+		
+		while (segments.size() < cutOffLength)
+		{
+			int r = rnd.nextInt(10); //50% of elements are curves
+			switch (r)
+			{
+			case 0: addLowRollingHills(Length.randomLetter().value, Hill.randomLetter().value);
+			case 1: addSCurves(); 
+			case 2: addStraight(Length.randomLetter().value);
+			case 3: addBumps();
+			case 4: addHill(Length.randomLetter().value, Hill.randomLetter().value);
+			default: addCurve(Length.randomLetter().value, Curve.randomLetter().value, Hill.randomLetter().value);
+			}
+		}
+		addDownhillToEnd(0);
+	}
+	
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
-		addStraight(LENGTH_SHORT);
-		addLowRollingHills(0, 0);
+		generateRandomTrack(5500);
+/*
+ 		addStraight(Length.SHORT.value);
+ 		addLowRollingHills(0, 0);
 		addSCurves();
-		addCurve(LENGTH_MEDIUM, CURVE_MEDIUM, HILL_LOW);
+		addCurve(Length.MEDIUM.value, Curve.MEDIUM.value, Hill.LOW.value);
 		addBumps();
 		addLowRollingHills(0,0);
-		addCurve(LENGTH_LONG*2, CURVE_MEDIUM, HILL_MEDIUM);
+		addCurve(Length.LONG.value*2, Curve.MEDIUM.value, Hill.MEDIUM.value);
 		addStraight(0);
-		addHill(LENGTH_MEDIUM, HILL_HIGH);
+		addHill(Length.MEDIUM.value, Hill.HIGH.value);
 		addSCurves();
-		addCurve(LENGTH_LONG, -CURVE_MEDIUM, HILL_NONE);
-		addHill(LENGTH_LONG, HILL_HIGH);
-		addCurve(LENGTH_LONG, CURVE_MEDIUM, -HILL_LOW);
+		addCurve(Length.LONG.value, -Curve.MEDIUM.value, Hill.NONE.value);
+		addHill(Length.LONG.value, Hill.HIGH.value);
+		addCurve(Length.LONG.value, Curve.MEDIUM.value, -Hill.LOW.value);
 		addBumps();
-		addHill(LENGTH_LONG, -HILL_MEDIUM);
+		addHill(Length.LONG.value, -Hill.MEDIUM.value);
 		addStraight(0);
 		addSCurves();
 		addDownhillToEnd(0);
+*/
 		resetSprites();
 		resetCars();
 

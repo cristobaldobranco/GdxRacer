@@ -8,10 +8,11 @@ public class GameStats
 	float lapTime;
 	float fastestLapTime = -1;
 	float lastLapTime = -1;
+	private float warningThreshold = 10;
 	
 	public void checkpoint(float increaseTime)
 	{
-		endgameTimer += increaseTime;
+		endgameTimer += increaseTime - 5*lapNumber;
 		if (lapNumber > 0)
 		{
 			lastLapTime = lapTime;
@@ -30,7 +31,7 @@ public class GameStats
 			int seconds = ( (int) time ) % 60;
 			int minutes = ( (int) time ) / 60;
 			
-			String s = String.format("%2d:%2d:%3d", minutes, seconds, millies);
+			String s = String.format("%02d:%02d:%03d", minutes, seconds, millies);
 			
 			return s;
 		}
@@ -56,5 +57,15 @@ public class GameStats
 	public boolean isTimeUp()
 	{
 		return endgameTimer <= 0;
+	}
+
+	public boolean countdownWarning() 
+	{
+		if (lapNumber > 0)
+		{
+			if (endgameTimer < warningThreshold )
+				return true;
+		}
+		return false;
 	}
 }

@@ -69,6 +69,10 @@ public class Render {
 	long messageTimestamp;
 	int messageTimeOut;
 
+	private boolean messageFlash;
+
+	private long nextMessageFlashToogleTime;
+
 	private Render(ShapeRenderer shapeRenderer) 
 	{
 		renderer = shapeRenderer;
@@ -273,9 +277,17 @@ public class Render {
 
 	public void text(String txt, int timeout)
 	{
+		text(txt, timeout, false);
+	}
+	
+	
+	public void text(String txt, int timeout, boolean flash)
+	{
 		this.messageText = txt;
 		this.messageTimeOut = timeout;
 		this.messageTimestamp = System.currentTimeMillis();
+		this.messageFlash = flash;
+		this.nextMessageFlashToogleTime = System.currentTimeMillis() + 500;
 		//		messageLabel.setText(txt);
 		//		stage.draw();
 
@@ -294,6 +306,17 @@ public class Render {
 		timeRemainingLabel.setText(Integer.toString(gameStats.endgameTimer < 0 ? 0 : (int) gameStats.endgameTimer ));
 		fastestLapTimeLabel.setText(gameStats.getFastestLapTime());
 		messageLabel.setText(messageText);
+		if (messageFlash)
+		{
+			if (nextMessageFlashToogleTime < System.currentTimeMillis())
+			{
+				if (messageLabel.getStyle().fontColor.a > 0.5f)
+					messageLabel.getStyle().fontColor.a = 0;
+				else
+					messageLabel.getStyle().fontColor.a = 1;
+				nextMessageFlashToogleTime = System.currentTimeMillis() + 500;
+			}
+		}
 		if (messageTimeOut != 0)
 		{
 			if (messageTimestamp + messageTimeOut * 1000 < System.currentTimeMillis())
@@ -301,6 +324,7 @@ public class Render {
 				messageLabel.setText("");
 				messageText = "";
 				messageTimeOut = 0;
+				messageFlash = false;
 			}
 		}
 		stage.draw();

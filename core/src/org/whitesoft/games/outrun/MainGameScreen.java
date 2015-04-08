@@ -192,6 +192,7 @@ public class MainGameScreen implements Screen {
 	private int startSegment;
 	//	private boolean raceTimeUp = false;
 	private boolean checkpointFired = false;
+	private boolean firstCheckPoint = true;
 	//	private boolean gameOver = false;
 	RaceState raceState = RaceState.RACE_STATE_PRERACE;
 
@@ -260,14 +261,14 @@ public class MainGameScreen implements Screen {
 
 	private void addStraight(int num)
 	{
-		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
+//		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		addRoad(num, num, num, 0, 0);
 	}
 
 	private void addHill(int num, float height)
 	{
-		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
+//		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		addRoad(num, num, num, 0, height);
@@ -278,13 +279,13 @@ public class MainGameScreen implements Screen {
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		curve = (curve > 0) ? curve : Curve.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
-		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
+//		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
 		addRoad(num, num, num, curve, height);
 	}
 
 	private void addLowRollingHills(int num, float height)
 	{
-		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ")");		
+//		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ")");		
 		//		num = (num > 0) ? num : Length.LENGTH_SHORT;
 		//		height = (height > 0) ? height : HILL_LOW;
 		addRoad(num, num, num,  0,                height/2);
@@ -297,7 +298,7 @@ public class MainGameScreen implements Screen {
 
 	private void addSCurves()
 	{
-		Gdx.app.log("TrackGen", "addSCurves()");		
+//		Gdx.app.log("TrackGen", "addSCurves()");		
 		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value,    Hill.NONE.value);
 		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.MEDIUM.value,  Hill.MEDIUM.value);
 		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.EASY.value,   -Hill.LOW.value);
@@ -307,7 +308,7 @@ public class MainGameScreen implements Screen {
 
 	private void addBumps() 
 	{
-		Gdx.app.log("TrackGen", "addBumps()");		
+//		Gdx.app.log("TrackGen", "addBumps()");		
 		addRoad(10, 10, 10, 0,  5);
 		addRoad(10, 10, 10, 0, -2);
 		addRoad(10, 10, 10, 0, -5);
@@ -319,14 +320,14 @@ public class MainGameScreen implements Screen {
 	}
 
 	private void addDownhillToEnd(int num) {
-		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
+//		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
 		addRoad(num, num, num, -Curve.EASY.value, -lastY()/segmentLength);
 	}
 
 	private void generateRandomTrack(int cutOffLength)
 	{
-		Random rnd = new Random(10);
+		Random rnd = new Random(); 
 
 		addStraight(Length.randomLetter().value);
 
@@ -343,12 +344,13 @@ public class MainGameScreen implements Screen {
 			default: addCurve(Length.randomLetter().value, Curve.randomLetter().value, Hill.randomLetter().value);
 			}
 		}
+		addHill(Length.LONG.value, -Hill.MEDIUM.value);
 		addDownhillToEnd(0);
 	}
 
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
-		generateRandomTrack(5500);
+		generateRandomTrack(5300);
 		/*
  		addStraight(Length.SHORT.value);
  		addLowRollingHills(0, 0);
@@ -527,8 +529,13 @@ public class MainGameScreen implements Screen {
 			if (!checkpointFired )
 			{
 				raceState = RaceState.RACE_STATE_RACE;
-				gameStats.checkpoint(5);
+				gameStats.checkpoint(140, true);
 				checkpointFired = true;
+				if (!firstCheckPoint)
+				{
+					Render.instance.text("TIME EXTENDED!", 3, true);
+					firstCheckPoint = false;
+				}
 			}
 		}
 		else
@@ -598,7 +605,7 @@ public class MainGameScreen implements Screen {
 						dir = (car.offset > otherCar.offset) ? 1 : -1;
 
 					float ret = dir/i * (car.speed-otherCar.speed)/maxSpeed; 
-					System.out.println(ret);
+//					System.out.println(ret);
 					return ret; 
 				}
 			}
@@ -699,7 +706,7 @@ public class MainGameScreen implements Screen {
 			preRaceCountdown -= dt;
 			if (preRaceCountdown <= 0)
 			{
-				Render.instance.text("GO!", 2);
+				Render.instance.text("GO!", 3, true);
 				raceState = RaceState.RACE_STATE_RACE;
 			}
 			break;

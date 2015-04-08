@@ -14,7 +14,12 @@ public class GameStats
 
 	public void checkpoint(float increaseTime)
 	{
-		endgameTimer += increaseTime - 5*lapNumber;
+		checkpoint(increaseTime, false);
+	}
+	
+	public void checkpoint(float increaseTime, boolean autoDecrease)
+	{
+		endgameTimer += increaseTime - (autoDecrease ? 5*lapNumber : 0);
 		if (lapNumber > 0)
 		{
 			lastLapTime = lapTime;

@@ -20,7 +20,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class MainGameScreen implements Screen {
-/*
+	/*
 	static int LENGTH_NONE = 0;
 	static int LENGTH_SHORT = 25;
 	static int LENGTH_MEDIUM = 50;
@@ -35,93 +35,93 @@ public class MainGameScreen implements Screen {
 	static int CURVE_EASY = 2;
 	static int CURVE_MEDIUM = 4;
 	static int CURVE_HARD = 6;
-*/
+	 */
 	enum Curve{
-		  NONE(0),
-		  EASY(2),
-		  MEDIUM(4),
-		  HARD(6);
-		  //...
-		  
-		  private float value;
-		  
-		  private Curve (float v)
-		  {
-			  value = v;
-		  }
+		NONE(0),
+		EASY(2),
+		MEDIUM(4),
+		HARD(6);
+		//...
 
-		  public float getValue()
-		  {
-			  return value;
-		  }
-		  
-		  private static final List<Curve> VALUES =
-		    Collections.unmodifiableList(Arrays.asList(values()));
-		  private static final int SIZE = VALUES.size();
-		  private static final Random RANDOM = new Random();
+		private float value;
 
-		  public static Curve randomLetter()  {
-		    return VALUES.get(RANDOM.nextInt(SIZE));
-		  }
+		private Curve (float v)
+		{
+			value = v;
+		}
+
+		public float getValue()
+		{
+			return value;
+		}
+
+		private static final List<Curve> VALUES =
+				Collections.unmodifiableList(Arrays.asList(values()));
+		private static final int SIZE = VALUES.size();
+		private static final Random RANDOM = new Random();
+
+		public static Curve randomLetter()  {
+			return VALUES.get(RANDOM.nextInt(SIZE));
+		}
 
 	}	
-	
+
 	enum Hill {
-		  NONE(0),
-		  LOW(20),
-		  MEDIUM(40),
-		  HIGH(60);
-		  //...
+		NONE(0),
+		LOW(20),
+		MEDIUM(40),
+		HIGH(60);
+		//...
 
-		  private float value;
-		  
-		  private Hill (float v)
-		  {
-			  value = v;
-		  }
+		private float value;
 
-		  public float getValue()
-		  {
-			  return value;
-		  }
-		  
-		  private static final List<Hill> VALUES =
-		    Collections.unmodifiableList(Arrays.asList(values()));
-		  private static final int SIZE = VALUES.size();
-		  private static final Random RANDOM = new Random();
+		private Hill (float v)
+		{
+			value = v;
+		}
 
-		  public static Hill randomLetter()  {
-		    return VALUES.get(RANDOM.nextInt(SIZE));
-		  }
+		public float getValue()
+		{
+			return value;
+		}
+
+		private static final List<Hill> VALUES =
+				Collections.unmodifiableList(Arrays.asList(values()));
+		private static final int SIZE = VALUES.size();
+		private static final Random RANDOM = new Random();
+
+		public static Hill randomLetter()  {
+			return VALUES.get(RANDOM.nextInt(SIZE));
+		}
 	}		
-	
+
 	enum Length {
-		  NONE(0),
-		  SHORT(25),
-		  MEDIUM(50),
-		  LONG(100);
-		  //...
+		NONE(0),
+		SHORT(25),
+		MEDIUM(50),
+		LONG(100);
+		//...
 
-		  private int value;
-		  
-		  private Length (int v)
-		  {
-			  value = v;
-		  }
+		private int value;
 
-		  public int getValue()
-		  {
-			  return value;
-		  }
-		  
-		  private static final List<Length> VALUES =
-		    Collections.unmodifiableList(Arrays.asList(values()));
-		  private static final int SIZE = VALUES.size();
-		  private static final Random RANDOM = new Random();
+		private Length (int v)
+		{
+			value = v;
+		}
 
-		  public static Length randomLetter()  {
-		    return VALUES.get(RANDOM.nextInt(SIZE));
-		  }
+		public int getValue()
+		{
+			return value;
+		}
+
+		private static final List<Length> VALUES =
+				Collections.unmodifiableList(Arrays.asList(values()));
+		private static final int SIZE = VALUES.size();
+		private static final Random RANDOM = new Random();
+
+		public static Length randomLetter()  {
+			return VALUES.get(RANDOM.nextInt(SIZE));
+		}
 	}		
 	enum RaceState {
 		RACE_STATE_PRERACE,
@@ -180,9 +180,10 @@ public class MainGameScreen implements Screen {
 	int totalCars      = 200;                     // total number of cars on the road
 	float currentLapTime = 0;                       // current lap time
 	float lastLapTime    = 0;                    // last lap time
-//	float endgameTimer = 0;
+	//	float endgameTimer = 0;
 	int lapNumber = 0;
-	
+	float preRaceCountdown = 3.9f;
+
 	GameStats gameStats = new GameStats();
 
 	private OrthographicCamera camera;
@@ -208,7 +209,7 @@ public class MainGameScreen implements Screen {
 		shapeRenderer = new ShapeRenderer();
 		shapeRenderer.setProjectionMatrix(camera.combined);
 		Render.initialize(shapeRenderer);
-		spriteScale = (float) (0.3 * 1 / Render.instance.getSpriteWidth("player_straight"));
+		spriteScale = (float) (0.3 / Render.instance.getSpriteWidth("player_straight"));
 
 		reset();
 	}
@@ -260,23 +261,23 @@ public class MainGameScreen implements Screen {
 	private void addStraight(int num)
 	{
 		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
-//		num = (num > 0) ? num : Length.MEDIUM.value;
+		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		addRoad(num, num, num, 0, 0);
 	}
 
 	private void addHill(int num, float height)
 	{
 		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
-//		num = (num > 0) ? num : Length.MEDIUM.value;
-//		height = (height > 0) ? height : Hill.MEDIUM.value;
+		//		num = (num > 0) ? num : Length.MEDIUM.value;
+		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		addRoad(num, num, num, 0, height);
 	}
 
 	private void addCurve(int num, float curve, float height)
 	{
-//		num = (num > 0) ? num : Length.MEDIUM.value;
+		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		curve = (curve > 0) ? curve : Curve.MEDIUM.value;
-//		height = (height > 0) ? height : Hill.MEDIUM.value;
+		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
 		addRoad(num, num, num, curve, height);
 	}
@@ -284,8 +285,8 @@ public class MainGameScreen implements Screen {
 	private void addLowRollingHills(int num, float height)
 	{
 		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ")");		
-//		num = (num > 0) ? num : Length.LENGTH_SHORT;
-//		height = (height > 0) ? height : HILL_LOW;
+		//		num = (num > 0) ? num : Length.LENGTH_SHORT;
+		//		height = (height > 0) ? height : HILL_LOW;
 		addRoad(num, num, num,  0,                height/2);
 		addRoad(num, num, num,  0,               -height);
 		addRoad(num, num, num,  Curve.EASY.value, height);
@@ -322,13 +323,13 @@ public class MainGameScreen implements Screen {
 		num = num > 0 ? num : 200;    	
 		addRoad(num, num, num, -Curve.EASY.value, -lastY()/segmentLength);
 	}
-	
+
 	private void generateRandomTrack(int cutOffLength)
 	{
 		Random rnd = new Random(10);
-		
+
 		addStraight(Length.randomLetter().value);
-		
+
 		while (segments.size() < cutOffLength)
 		{
 			int r = rnd.nextInt(10); //50% of elements are curves
@@ -344,11 +345,11 @@ public class MainGameScreen implements Screen {
 		}
 		addDownhillToEnd(0);
 	}
-	
+
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
 		generateRandomTrack(5500);
-/*
+		/*
  		addStraight(Length.SHORT.value);
  		addLowRollingHills(0, 0);
 		addSCurves();
@@ -367,7 +368,7 @@ public class MainGameScreen implements Screen {
 		addStraight(0);
 		addSCurves();
 		addDownhillToEnd(0);
-*/
+		 */
 		resetSprites();
 		resetCars();
 
@@ -375,7 +376,7 @@ public class MainGameScreen implements Screen {
 		segments.get(findSegment(playerZ).index + 2).setUniColor(Color.WHITE);
 		segments.get(findSegment(playerZ).index + 3).setUniColor(Color.WHITE);
 		//		for(int n = 0 ; n < rumbleLength ; n++)
-			//			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
+		//			segments.get(segments.size() -1-n).colorRoad = Color.BLACK;
 
 		trackLength = segments.size() * segmentLength;
 	}
@@ -526,7 +527,7 @@ public class MainGameScreen implements Screen {
 			if (!checkpointFired )
 			{
 				raceState = RaceState.RACE_STATE_RACE;
-				gameStats.checkpoint(120);
+				gameStats.checkpoint(5);
 				checkpointFired = true;
 			}
 		}
@@ -566,11 +567,11 @@ public class MainGameScreen implements Screen {
 
 
 	private float updateCarOffset(Car car, RoadSegment carSegment, RoadSegment playerSegment, float playerW) {
-		int i, dir;
+		int i;
 		RoadSegment segment;
 
-		float otherCarW;
-		int lookahead = 20;
+		float otherCarW, dir;
+		int lookahead = 50;
 		float carW = car.width * spriteScale;
 		// optimization, dont bother steering around other cars when 'out of sight' of the player
 		if ((carSegment.index - playerSegment.index) > drawDistance)
@@ -579,9 +580,9 @@ public class MainGameScreen implements Screen {
 			segment = segments.get((carSegment.index+i)%segments.size());
 			if ((segment == playerSegment) && (car.speed > speed) && (Util.overlap(playerX, playerW, car.offset, carW, 1.2f))) {
 				if (playerX > 0.5)
-					dir = -1;
+					dir = -0.3f;
 				else if (playerX < -0.5)
-					dir = 1;
+					dir = 0.3f;
 				else
 					dir = (car.offset > playerX) ? 1 : -1;
 				return dir * 1/i * (car.speed-speed)/maxSpeed; // the closer the cars (smaller i) and the greated the speed ratio, the larger the offset
@@ -590,12 +591,15 @@ public class MainGameScreen implements Screen {
 				otherCarW = otherCar.width * spriteScale;
 				if ((car.speed > otherCar.speed) && Util.overlap(car.offset, carW, otherCar.offset, otherCarW, 1.2f)) {
 					if (otherCar.offset > 0.5)
-						dir = -1;
+						dir = -0.3f;
 					else if (otherCar.offset < -0.5)
-						dir = 1;
+						dir = 0.3f;
 					else
 						dir = (car.offset > otherCar.offset) ? 1 : -1;
-					return dir * 1/i * (car.speed-otherCar.speed)/maxSpeed;
+
+					float ret = dir/i * (car.speed-otherCar.speed)/maxSpeed; 
+					System.out.println(ret);
+					return ret; 
 				}
 			}
 		}
@@ -688,14 +692,25 @@ public class MainGameScreen implements Screen {
 		}
 		Render.instance.finishRenderSequence();
 
-		if (raceState == RaceState.RACE_STATE_GAMEOVER )
+		switch (raceState)
 		{
-			Render.instance.text("GAME OVER!", 200, 200);
+		case RACE_STATE_PRERACE:
+			Render.instance.text(Integer.toString((int) preRaceCountdown), 0);
+			preRaceCountdown -= dt;
+			if (preRaceCountdown <= 0)
+			{
+				Render.instance.text("GO!", 2);
+				raceState = RaceState.RACE_STATE_RACE;
+			}
+			break;
+		case RACE_STATE_RACE:
+			break;
+		case RACE_STATE_GAMEOVER:
+			Render.instance.text("GAME OVER!", 0);
+			break;
 		}
-		else
-		{
-			Render.instance.ui(gameStats);
-		}
+
+		Render.instance.ui(gameStats);
 
 	}
 
@@ -721,7 +736,7 @@ public class MainGameScreen implements Screen {
 
 	private void getInput() 
 	{
-		if (raceState != RaceState.RACE_STATE_GAMEOVER)
+		if ( (raceState != RaceState.RACE_STATE_GAMEOVER) && (raceState != RaceState.RACE_STATE_PRERACE))
 		{
 			if (raceState != RaceState.RACE_STATE_TIMEUP)
 			{

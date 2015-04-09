@@ -130,6 +130,7 @@ public class MainGameScreen implements Screen {
 		RACE_STATE_GAMEOVER
 	}
 
+	
 	Game game;
 	SpriteBatch batch;
 	Texture img;
@@ -165,8 +166,9 @@ public class MainGameScreen implements Screen {
 	float  offRoadLimit  =  maxSpeed/4;             // limit when off road deceleration no longer applies (e.g. you can always go at least this speed even when off road)
 	float  spriteScale   = 1;
 
-	boolean keyLeft       = false;
-	boolean keyRight      = false;
+//	boolean keyLeft       = false;
+//	boolean keyRight      = false;
+	float inputX = 0;
 	boolean keyFaster     = false;
 	boolean keySlower     = false;
 
@@ -261,14 +263,14 @@ public class MainGameScreen implements Screen {
 
 	private void addStraight(int num)
 	{
-//		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
+		Gdx.app.log("TrackGen", "addStraight(" +  num + ")");
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		addRoad(num, num, num, 0, 0);
 	}
 
 	private void addHill(int num, float height)
 	{
-//		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
+		Gdx.app.log("TrackGen", "addHill(" +  num + ", " + height + ")");
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		addRoad(num, num, num, 0, height);
@@ -277,38 +279,40 @@ public class MainGameScreen implements Screen {
 	private void addCurve(int num, float curve, float height)
 	{
 		//		num = (num > 0) ? num : Length.MEDIUM.value;
-		curve = (curve > 0) ? curve : Curve.MEDIUM.value;
+//		urve = (curve > 0) ? curve : Curve.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
-//		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
+		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
 		addRoad(num, num, num, curve, height);
 	}
 
 	private void addLowRollingHills(int num, float height)
 	{
-//		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ")");		
 		//		num = (num > 0) ? num : Length.LENGTH_SHORT;
 		//		height = (height > 0) ? height : HILL_LOW;
+		int sign = Util.randomSign();
+		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ", " + height + ", " + sign + ")");		
 		addRoad(num, num, num,  0,                height/2);
 		addRoad(num, num, num,  0,               -height);
-		addRoad(num, num, num,  Curve.EASY.value, height);
+		addRoad(num, num, num,  sign * Curve.EASY.value, height);
 		addRoad(num, num, num,  0,                0);
-		addRoad(num, num, num, -Curve.EASY.value, height/2);
+		addRoad(num, num, num, -sign * Curve.EASY.value, height/2);
 		addRoad(num, num, num,  0,                0);
 	}
 
 	private void addSCurves()
 	{
-//		Gdx.app.log("TrackGen", "addSCurves()");		
-		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value,    Hill.NONE.value);
-		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.MEDIUM.value,  Hill.MEDIUM.value);
-		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.EASY.value,   -Hill.LOW.value);
-		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value,    Hill.MEDIUM.value);
-		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.MEDIUM.value, -Hill.MEDIUM.value);
+		int sign = Util.randomSign();
+		Gdx.app.log("TrackGen", "addSCurves("+ sign + ")" );		
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value * sign,    Hill.NONE.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.MEDIUM.value * sign,  Hill.MEDIUM.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,   Curve.EASY.value * sign,   -Hill.LOW.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.EASY.value * sign,    Hill.MEDIUM.value);
+		addRoad(Length.MEDIUM.value, Length.MEDIUM.value, Length.MEDIUM.value,  -Curve.MEDIUM.value * sign, -Hill.MEDIUM.value);
 	}
 
 	private void addBumps() 
 	{
-//		Gdx.app.log("TrackGen", "addBumps()");		
+		Gdx.app.log("TrackGen", "addBumps()");		
 		addRoad(10, 10, 10, 0,  5);
 		addRoad(10, 10, 10, 0, -2);
 		addRoad(10, 10, 10, 0, -5);
@@ -320,9 +324,9 @@ public class MainGameScreen implements Screen {
 	}
 
 	private void addDownhillToEnd(int num) {
-//		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
+		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
-		addRoad(num, num, num, -Curve.EASY.value, -lastY()/segmentLength);
+		addRoad(num, num, num, Util.randomSign()*Curve.EASY.value, -lastY()/segmentLength);
 	}
 
 	private void generateRandomTrack(int cutOffLength)
@@ -333,15 +337,15 @@ public class MainGameScreen implements Screen {
 
 		while (segments.size() < cutOffLength)
 		{
-			int r = rnd.nextInt(10); //50% of elements are curves
+			int r = rnd.nextInt(); //50% of elements are curves
 			switch (r)
 			{
-			case 0: addLowRollingHills(Length.randomLetter().value, Hill.randomLetter().value);
+			case 0: addLowRollingHills(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
 			case 1: addSCurves(); 
 			case 2: addStraight(Length.randomLetter().value);
 			case 3: addBumps();
-			case 4: addHill(Length.randomLetter().value, Hill.randomLetter().value);
-			default: addCurve(Length.randomLetter().value, Curve.randomLetter().value, Hill.randomLetter().value);
+			case 4: addHill(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
+			default: addCurve(Length.randomLetter().value, Util.randomSign() * Curve.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
 			}
 		}
 		addHill(Length.LONG.value, -Hill.MEDIUM.value);
@@ -414,7 +418,6 @@ public class MainGameScreen implements Screen {
 
 	void resetSprites()
 	{
-		int [] posNegChoice = {-1, 1 };
 		String [] plants = { "tree1","tree2", "dead_tree1", "dead_tree2", "palm_tree", "bush1", "bush2", "cactus", "stump", "boulder1", "boulder2", "boulder3" } ;    
 
 		int n, i;
@@ -444,11 +447,11 @@ public class MainGameScreen implements Screen {
 			segments.get(n + Util.randomInt(0,5)).addSprite("tree2", (float) (-1 - (Math.random() * 2)));
 		}
 		for(n = 200 ; n < segments.size() ; n += 3) {
-			segments.get(n).addSprite(plants[Util.randomInt(0, plants.length - 1)], (float) (Util.randomChoice(posNegChoice) * (2 + Math.random() * 5))); 
+			segments.get(n).addSprite(plants[Util.randomInt(0, plants.length - 1)], (float) (Util.randomSign() * (2 + Math.random() * 5))); 
 		}
 		for(n = 1000 ; n < (segments.size()-50) ; n += 100) 
 		{
-			int side      = Util.randomChoice(posNegChoice);
+			int side      = Util.randomSign();
 			segments.get(n + Util.randomInt(0, 50)).addSprite("billboard0" + Util.randomInt(1, 9), -side);
 
 			for(i = 0 ; i < 20 ; i++) {
@@ -476,11 +479,14 @@ public class MainGameScreen implements Screen {
 
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
+		playerX = playerX + dx * inputX;
+/*		
 		if (keyLeft)
 			playerX = playerX - dx;
 		else if (keyRight)
 			playerX = playerX + dx;
-
+*/
+		
 		playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);		
 
 		if (keyFaster)
@@ -534,8 +540,8 @@ public class MainGameScreen implements Screen {
 				if (!firstCheckPoint)
 				{
 					Render.instance.text("TIME EXTENDED!", 3, true);
-					firstCheckPoint = false;
 				}
+				firstCheckPoint = false;
 			}
 		}
 		else
@@ -692,7 +698,7 @@ public class MainGameScreen implements Screen {
 						cameraDepth/playerZ,
 						width/2,
 						(height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
-						speed * (keyLeft ? -1 : keyRight ? 1 : 0),
+						speed * inputX,
 						playerSegment.p2.world.y - playerSegment.p1.world.y);
 			}
 
@@ -706,7 +712,7 @@ public class MainGameScreen implements Screen {
 			preRaceCountdown -= dt;
 			if (preRaceCountdown <= 0)
 			{
-				Render.instance.text("GO!", 3, true);
+				Render.instance.text("GO!", 2);
 				raceState = RaceState.RACE_STATE_RACE;
 			}
 			break;
@@ -754,8 +760,12 @@ public class MainGameScreen implements Screen {
 				keyFaster = false;
 			}
 			keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) ;
-			keyLeft   = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT) ;
-			keyRight  = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT) ;
+			if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT))
+				inputX = -1;
+			else if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT))
+				inputX = 1;
+			else 
+				inputX = 0;
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))

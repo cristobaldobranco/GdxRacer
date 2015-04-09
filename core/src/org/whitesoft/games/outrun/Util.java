@@ -42,6 +42,12 @@ public class Util {
 		return overlap(x1, w1, x2, w2, 1);
 	}
 
+	private final static int [] posNegChoice = {-1, 1 };
+
+	public static int randomSign()
+	{
+		return randomChoice(posNegChoice);
+	}
 	
 	public static boolean overlap(float x1, float w1, float x2, float w2, float percent) {
 		float half = percent/2;

@@ -480,6 +480,7 @@ public class MainGameScreen implements Screen {
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
 		playerX = playerX + dx * inputX;
+		System.out.println(dx + ", " + inputX*dx);
 /*		
 		if (keyLeft)
 			playerX = playerX - dx;
@@ -535,7 +536,7 @@ public class MainGameScreen implements Screen {
 			if (!checkpointFired )
 			{
 				raceState = RaceState.RACE_STATE_RACE;
-				gameStats.checkpoint(140, true);
+				gameStats.checkpoint(120, true);
 				checkpointFired = true;
 				if (!firstCheckPoint)
 				{

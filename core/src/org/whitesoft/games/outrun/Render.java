@@ -59,6 +59,8 @@ public class Render {
 	Label timeRemainingLabel;
 	Label lapTimeLabel;
 	Label fastestLapTimeLabel;
+	Label speedLabel;
+	Label percentFinishedLabel;
 	Label messageLabel;
 	Label text1, text2, text3;
 	// table.align(Align.right | Align.bottom);
@@ -86,12 +88,14 @@ public class Render {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("clacon.ttf"));
 		FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 		parameter.size = 24;
+		parameter.shadowOffsetX = 1;
+		parameter.shadowOffsetY = 1;
 		parameter.shadowColor = new Color(0,0,0,1);
-		parameter.shadowOffsetX = 3;
-		parameter.shadowOffsetY = 3;
 		BitmapFont font24 = generator.generateFont(parameter); // font size 12 pixels
 
 		parameter.size = 64;
+		parameter.shadowOffsetX = 3;
+		parameter.shadowOffsetY = 3;
 		BitmapFont font48 = generator.generateFont(parameter); // font size 12 pixels
 
 		parameter.size = 128;
@@ -116,8 +120,12 @@ public class Render {
 		timeRemainingLabel = new Label("", style48);
 		lapTimeLabel = new Label("", style24);
 		fastestLapTimeLabel = new Label("", style24);
+		percentFinishedLabel = new Label("", style24);
 		messageLabel = new Label("", styleHuge);
 		messageLabel.setAlignment(Align.center);
+		speedLabel = new Label("0km/h", style24);
+		speedLabel.setAlignment(Align.right);
+		percentFinishedLabel.setAlignment(Align.left);
 
 		text1 = new Label("CURRENT LAP", style24);
 		text3 = new Label("FASTEST LAP", style24);
@@ -140,6 +148,12 @@ public class Render {
 
 		table.center();
 		table.add(messageLabel).colspan(3).padRight(50).expandY();
+		table.row();
+		table.bottom();
+		table.add(percentFinishedLabel);
+		table.add();
+		table.add(speedLabel);
+		
 
 	}
 
@@ -239,18 +253,18 @@ public class Render {
 	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) 
 	{
 		AtlasRegion reg = atlas.findRegion(spriteName);
-		TextureRegion region = new TextureRegion(reg);
-//		reg.flip(false, true);
-		Sprite sprite = atlas.createSprite(spriteName);
-		if (sprite == null)
+		if (reg == null)
 		{
 			System.out.println(spriteName);
 			return;
 		}
-		sprite.flip(false, true);
+		TextureRegion region = new TextureRegion(reg);
+//		reg.flip(false, true);
+//		Sprite sprite = atlas.createSprite(spriteName);
+//		sprite.flip(false, true);
 		//  scale for projection AND relative to roadWidth (for tweakUI)
-		float destW  = (sprite.getWidth()  * scale * width/2) * (spriteScale * roadWidth);
-		float destH  = (sprite.getHeight() * scale * width/2) * (spriteScale * roadWidth);
+		float destW  = (reg.getRegionWidth()  * scale * width/2) * (spriteScale * roadWidth);
+		float destH  = (reg.getRegionHeight() * scale * width/2) * (spriteScale * roadWidth);
 
 		destX = destX + (destW * (offsetX));
 		destY = destY + (destH * (offsetY));
@@ -260,7 +274,7 @@ public class Render {
 		region.setRegion(reg.getRegionX(), reg.getRegionY(), reg.getRegionWidth(), (int) (reg.getRegionHeight() - (reg.getRegionHeight()*clipH/destH)));
 		if (clipH < destH)
 		{
-			System.out.println(destX + ", "+  destY + ", " + destW + ", " + ( destH	-clipH));
+//			System.out.println(destX + ", "+  destY + ", " + destW + ", " + ( destH	-clipH));
 //			sprite.setBounds(destX, destY, destW, destH);
 //			sprite.draw(polyBatch);
 			region.flip(false, true);
@@ -315,6 +329,8 @@ public class Render {
 
 		timeRemainingLabel.setText(Integer.toString(gameStats.endgameTimer < 0 ? 0 : (int) gameStats.endgameTimer ));
 		fastestLapTimeLabel.setText(gameStats.getFastestLapTime());
+		speedLabel.setText(gameStats.currentSpeed + " km/h");
+		percentFinishedLabel.setText(gameStats.getPercentFinished());
 		messageLabel.setText(messageText);
 		if (messageFlash)
 		{

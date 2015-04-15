@@ -12,6 +12,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
@@ -136,6 +137,8 @@ public class MainGameScreen implements Screen {
 	Game game;
 	SpriteBatch batch;
 	Texture img;
+	
+	Music music = null;
 
 	float fps           = 60;                      // how many 'update' frames per second
 	float step1          = 1/fps;                   // how long is each frame (in seconds)
@@ -203,7 +206,11 @@ public class MainGameScreen implements Screen {
 	public MainGameScreen(Game game)
 	{
 		this.game = game;
-
+/*		
+		music = Gdx.audio.newMusic(Gdx.files.internal("music/568498_Race-bit.mp3"));
+		music.setLooping(true);
+		music.setVolume(0.6f);
+*/
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
 
@@ -740,7 +747,8 @@ public class MainGameScreen implements Screen {
 	{
 		if (raceState == RaceState.RACE_STATE_RACE)
 		{
-			gameStats.update(delta);
+			RoadSegment playerSegment = findSegment(position+playerZ);			
+			gameStats.update(delta, speed/maxSpeed, ((float) playerSegment.index) / segments.size());
 			if (gameStats.isTimeUp())
 			{
 				raceState = RaceState.RACE_STATE_TIMEUP;
@@ -781,8 +789,10 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void show() {
-		// TODO Auto-generated method stub
-
+		if (music != null)
+		{
+			music.play();
+		}
 	}
 
 	@Override
@@ -805,8 +815,11 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
-
+		if (music != null)
+		{
+			music.stop();
+			music.dispose();
+		}
 	}
 
 	void reset() {

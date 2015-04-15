@@ -9,8 +9,11 @@ public class GameStats
 	float fastestLapTime = -1;
 	float lastLapTime = -1;
 	private float warningThreshold = 10;
+	int maxSpeed = 240;
+	int currentSpeed;
 
 	boolean initialized = false;
+	private float percentFinished = 0;
 
 	public void checkpoint(float increaseTime)
 	{
@@ -56,10 +59,12 @@ public class GameStats
 		return floatToString(fastestLapTime);
 	}
 
-	public void update(float delta)
+	public void update(float delta, float curSpeed, float percent)
 	{
 		endgameTimer -= delta;
 		lapTime += delta;
+		currentSpeed = (int) (curSpeed * maxSpeed);
+		percentFinished = percent;
 	}
 
 	public boolean isTimeUp()
@@ -77,5 +82,10 @@ public class GameStats
 				return true;
 		}
 		return false;
+	}
+
+	public String getPercentFinished() 
+	{
+		return String.format("%03d%%", (int) (percentFinished * 100));
 	}
 }

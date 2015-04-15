@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
@@ -103,10 +104,10 @@ public class Render {
 
 		table = new Table();
 		stage.addActor(table);
-		table.setFillParent(true);
+//		table.setFillParent(true);
 		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		//		table.debug();
+		table.debug();
 
 		LabelStyle style24 = new LabelStyle(font24, null);
 		LabelStyle style48 = new LabelStyle(font48, null);
@@ -124,7 +125,7 @@ public class Render {
 
 		table.columnDefaults(0).width(80).padLeft(50);
 		table.columnDefaults(1).expandX();
-		table.columnDefaults(2).width(80).padRight(50);
+		table.columnDefaults(2).padRight(50).width(80);
 
 		table.top();
 		table.add(text1);
@@ -138,7 +139,7 @@ public class Render {
 		table.row();
 
 		table.center();
-		table.add(messageLabel).colspan(3).expandY();
+		table.add(messageLabel).colspan(3).padRight(50).expandY();
 
 	}
 
@@ -235,7 +236,11 @@ public class Render {
 		sprite(width, height, resolution, roadWidth, spriteName, scale, destX, destY + bounce, -0.5f, -1, 0);
 	}	
 
-	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) {
+	public void sprite(float width, float height, float resolution, float roadWidth, String spriteName, float scale, float destX, float destY, float offsetX, float offsetY, float clipY) 
+	{
+		AtlasRegion reg = atlas.findRegion(spriteName);
+		TextureRegion region = new TextureRegion(reg);
+//		reg.flip(false, true);
 		Sprite sprite = atlas.createSprite(spriteName);
 		if (sprite == null)
 		{
@@ -249,12 +254,17 @@ public class Render {
 
 		destX = destX + (destW * (offsetX));
 		destY = destY + (destH * (offsetY));
+		
 
 		float clipH = clipY != 0 ? Math.max(0, destY+destH-clipY) : 0;
+		region.setRegion(reg.getRegionX(), reg.getRegionY(), reg.getRegionWidth(), (int) (reg.getRegionHeight() - (reg.getRegionHeight()*clipH/destH)));
 		if (clipH < destH)
 		{
-			sprite.setBounds(destX, destY, destW, destH-clipH);
-			sprite.draw(polyBatch);
+			System.out.println(destX + ", "+  destY + ", " + destW + ", " + ( destH	-clipH));
+//			sprite.setBounds(destX, destY, destW, destH);
+//			sprite.draw(polyBatch);
+			region.flip(false, true);
+			polyBatch.draw(region, destX, destY, destW, destH-clipH);
 		}
 	}	
 	public void background(int width, int height, int layer, float rotation, float offset) 

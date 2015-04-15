@@ -13,6 +13,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
@@ -130,6 +131,7 @@ public class MainGameScreen implements Screen {
 		RACE_STATE_GAMEOVER
 	}
 
+	FPSLogger fpsLogger = new FPSLogger();
 	
 	Game game;
 	SpriteBatch batch;
@@ -282,7 +284,8 @@ public class MainGameScreen implements Screen {
 //		urve = (curve > 0) ? curve : Curve.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
-		addRoad(num, num, num, curve, height);
+		addRoad(Length.randomLetter().value +25, Length.randomLetter().value+25, Length.randomLetter().value+25, curve, height);
+//		addRoad(num, num, num, curve, height);
 	}
 
 	private void addLowRollingHills(int num, float height)
@@ -480,14 +483,9 @@ public class MainGameScreen implements Screen {
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
 
 		playerX = playerX + dx * inputX;
-		System.out.println(dx + ", " + inputX*dx);
-/*		
-		if (keyLeft)
-			playerX = playerX - dx;
-		else if (keyRight)
-			playerX = playerX + dx;
-*/
+//		System.out.println(dx + ", " + inputX*dx);
 		
+	
 		playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);		
 
 		if (keyFaster)
@@ -729,7 +727,9 @@ public class MainGameScreen implements Screen {
 	}
 
 	@Override
-	public void render(float delta) {
+	public void render(float delta) 
+	{
+		fpsLogger.log();
 		getInput();
 		updateGameStats(delta);
 		updateGameWorld(delta);

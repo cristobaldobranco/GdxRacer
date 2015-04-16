@@ -128,6 +128,7 @@ public class MainGameScreen implements Screen {
 	enum RaceState {
 		RACE_STATE_PRERACE,
 		RACE_STATE_RACE,
+		RACE_STATE_PAUSED,
 		RACE_STATE_TIMEUP,
 		RACE_STATE_GAMEOVER
 	}
@@ -202,6 +203,10 @@ public class MainGameScreen implements Screen {
 	private boolean firstCheckPoint = true;
 	//	private boolean gameOver = false;
 	RaceState raceState = RaceState.RACE_STATE_PRERACE;
+
+	private boolean gamePaused = false;
+
+	private RaceState oldRaceState;
 
 	public MainGameScreen(Game game)
 	{
@@ -711,23 +716,6 @@ public class MainGameScreen implements Screen {
 		}
 		Render.instance.finishRenderSequence();
 
-		switch (raceState)
-		{
-		case RACE_STATE_PRERACE:
-			Render.instance.text(Integer.toString((int) preRaceCountdown), 0);
-			preRaceCountdown -= dt;
-			if (preRaceCountdown <= 0)
-			{
-				Render.instance.text("GO!", 2);
-				raceState = RaceState.RACE_STATE_RACE;
-			}
-			break;
-		case RACE_STATE_RACE:
-			break;
-		case RACE_STATE_GAMEOVER:
-			Render.instance.text("GAME OVER!", 0);
-			break;
-		}
 
 		Render.instance.ui(gameStats);
 
@@ -736,29 +724,50 @@ public class MainGameScreen implements Screen {
 	@Override
 	public void render(float delta) 
 	{
-		fpsLogger.log();
+//		fpsLogger.log();
 		getInput();
-		updateGameStats(delta);
-		updateGameWorld(delta);
+		if (!gamePaused )
+		{
+			updateGameStats(delta);
+			updateGameWorld(delta);
+		}
 		draw(delta);
 	}
 
 	private void updateGameStats(float delta) 
 	{
-		if (raceState == RaceState.RACE_STATE_RACE)
+		switch (raceState)
 		{
+		case RACE_STATE_PRERACE:
+			Render.instance.text(Integer.toString((int) preRaceCountdown), 0);
+			preRaceCountdown -= delta;
+			if (preRaceCountdown <= 0)
+			{
+				Render.instance.text("GO!", 2);
+				raceState = RaceState.RACE_STATE_RACE;
+			}
+			break;
+		case RACE_STATE_RACE:
+		case RACE_STATE_TIMEUP:
 			RoadSegment playerSegment = findSegment(position+playerZ);			
 			gameStats.update(delta, speed/maxSpeed, ((float) playerSegment.index) / segments.size());
 			if (gameStats.isTimeUp())
 			{
 				raceState = RaceState.RACE_STATE_TIMEUP;
 			}
+			break;
+		case RACE_STATE_GAMEOVER:
+			Render.instance.text("GAME OVER!", 0);
+			break;
+		default:
+			break;
 		}
 	}
 
 	private void getInput() 
 	{
-		if ( (raceState != RaceState.RACE_STATE_GAMEOVER) && (raceState != RaceState.RACE_STATE_PRERACE))
+		if ( (raceState == RaceState.RACE_STATE_RACE) 
+				|| (raceState == RaceState.RACE_STATE_TIMEUP))
 		{
 			if (raceState != RaceState.RACE_STATE_TIMEUP)
 			{
@@ -775,6 +784,22 @@ public class MainGameScreen implements Screen {
 				inputX = 1;
 			else 
 				inputX = 0;
+		}
+		
+		if (Gdx.input.isKeyJustPressed(Keys.SPACE))
+		{
+			gamePaused = !gamePaused;
+			if (gamePaused)
+			{
+//				System.out.println("Game paused " + raceState);
+				oldRaceState = raceState;
+				raceState = RaceState.RACE_STATE_PAUSED;
+			}
+			else
+			{
+//				System.out.println("Game resumed " + oldRaceState);
+				raceState = oldRaceState;
+			}
 		}
 
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))

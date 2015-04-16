@@ -86,8 +86,31 @@ public class SoundSystem {
 		engineSoundPlayerId = engineSound.loop();
 	}
 	
+//	float [] gearRatio = {25f/240f, 50f/240f, 80f/240f, 120f/240f, 170f/240f, 250f/240f};
+	float [] gearRatio = {80f/240f, 170f/240f, 250f/240f};
+	int gear = 1;
+	
 	public void enginePitch(float pct)
 	{
-		engineSound.setPitch(engineSoundPlayerId, 1 + pct*4);
+		int i;
+		
+		for (i = 0; i < gearRatio.length; i++)
+		{
+			if (gearRatio[i] > pct)
+				break;
+		}
+		float gearMinValue, gearMaxValue;
+		if (i == 0)
+		{
+			gearMinValue = 0;
+			gearMaxValue = gearRatio[i];
+		}
+		else
+		{
+			gearMinValue = gearRatio[i-1];
+			gearMaxValue = gearRatio[i];
+		}
+		
+		engineSound.setPitch(engineSoundPlayerId, 3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+1);
 	}
 }

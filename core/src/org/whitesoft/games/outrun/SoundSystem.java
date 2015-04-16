@@ -5,12 +5,16 @@ import java.util.Vector;
 import com.badlogic.gdx.Application.ApplicationType;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 
 public class SoundSystem {
 	Music music = null;
 	Vector<String> radioFiles = new Vector<String>();
 	int radioIndex = 0;
+	
+	Sound engineSound;
+	long engineSoundPlayerId; 
 	
 	public SoundSystem()
 	{
@@ -30,6 +34,8 @@ public class SoundSystem {
 				radioFiles.add(file.name());
 			}
 		}
+		
+		engineSound = Gdx.audio.newSound(Gdx.files.internal("sound/engine.wav"));	
 	}
 	
 	public void radioEnable(boolean on)
@@ -39,7 +45,7 @@ public class SoundSystem {
 			if (!radioFiles.isEmpty())
 			{
 				music = Gdx.audio.newMusic(Gdx.files.internal("music/" + radioFiles.get(radioIndex) ));
-				music.setVolume(0.6f);
+				music.setVolume(0.4f);
 				music.play();
 			}
 		}
@@ -73,5 +79,15 @@ public class SoundSystem {
 			music.stop();
 			music.dispose();
 		}		
+	}
+	
+	public void engineStart()
+	{
+		engineSoundPlayerId = engineSound.loop();
+	}
+	
+	public void enginePitch(float pct)
+	{
+		engineSound.setPitch(engineSoundPlayerId, 1 + pct*4);
 	}
 }

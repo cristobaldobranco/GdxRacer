@@ -734,8 +734,14 @@ public class MainGameScreen implements Screen {
 		{
 			updateGameStats(delta);
 			updateGameWorld(delta);
+			updateSoundSystem(speed/maxSpeed);
 		}
 		draw(delta);
+	}
+
+	private void updateSoundSystem(float f) {
+		soundSystem.enginePitch(f);
+		
 	}
 
 	private void updateGameStats(float delta) 
@@ -823,6 +829,7 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void show() {
+		soundSystem.engineStart();
 		soundSystem.radioSkip();
 	}
 

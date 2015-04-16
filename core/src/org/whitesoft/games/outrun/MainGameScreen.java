@@ -208,9 +208,13 @@ public class MainGameScreen implements Screen {
 
 	private RaceState oldRaceState;
 
+	private SoundSystem soundSystem;
+
 	public MainGameScreen(Game game)
 	{
 		this.game = game;
+		
+		soundSystem = new SoundSystem();
 /*		
 		music = Gdx.audio.newMusic(Gdx.files.internal("music/568498_Race-bit.mp3"));
 		music.setLooping(true);
@@ -801,6 +805,11 @@ public class MainGameScreen implements Screen {
 				raceState = oldRaceState;
 			}
 		}
+		
+		if (Gdx.input.isKeyJustPressed(Keys.R))
+		{
+			soundSystem.radioSkip();
+		}
 
 		if (Gdx.input.isKeyPressed(Keys.ESCAPE))
 			Gdx.app.exit();
@@ -814,10 +823,7 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void show() {
-		if (music != null)
-		{
-			music.play();
-		}
+		soundSystem.radioSkip();
 	}
 
 	@Override
@@ -840,11 +846,7 @@ public class MainGameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		if (music != null)
-		{
-			music.stop();
-			music.dispose();
-		}
+		soundSystem.dispose();
 	}
 
 	void reset() {

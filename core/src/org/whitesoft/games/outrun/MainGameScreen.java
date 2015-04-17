@@ -165,7 +165,7 @@ public class MainGameScreen implements Screen {
 	float  position      = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
 	float  speed         = 0;                       // current speed
 	float  maxSpeed      = segmentLength/step1;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
-	float  accel         =  maxSpeed/5;             // acceleration rate - tuned until it 'felt' right
+	float  accel         =  maxSpeed/7;             // acceleration rate - tuned until it 'felt' right
 	float  breaking      = -maxSpeed;               // deceleration rate when braking
 	float  decel         = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
 	float  offRoadDecel  = -maxSpeed/2;             // off road deceleration is somewhere in between
@@ -345,7 +345,11 @@ public class MainGameScreen implements Screen {
 	private void addDownhillToEnd(int num) {
 		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
-		addRoad(num, num, num, Util.randomSign()*Curve.EASY.value, -lastY()/segmentLength);
+		float firstY = (segments.size() == 0) ? 0 : segments.get(0).p1.world.y;
+		float diff = -lastY() + firstY;
+		
+
+		addRoad(num, num, num, Util.randomSign()*Curve.EASY.value, diff/segmentLength);
 	}
 
 	private void generateRandomTrack(int cutOffLength)
@@ -353,7 +357,8 @@ public class MainGameScreen implements Screen {
 		Random rnd = new Random(); 
 
 		addStraight(Length.randomLetter().value);
-
+		System.out.println(lastY());
+		
 		while (segments.size() < cutOffLength)
 		{
 			int r = rnd.nextInt(); //50% of elements are curves
@@ -366,9 +371,12 @@ public class MainGameScreen implements Screen {
 			case 4: addHill(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
 			default: addCurve(Length.randomLetter().value, Util.randomSign() * Curve.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
 			}
+			System.out.println(lastY());
 		}
 		addHill(Length.LONG.value, -Hill.MEDIUM.value);
+		System.out.println(lastY());		
 		addDownhillToEnd(0);
+		System.out.println(lastY());		
 	}
 
 	void resetRoad() {
@@ -550,7 +558,7 @@ public class MainGameScreen implements Screen {
 			if (!checkpointFired )
 			{
 				raceState = RaceState.RACE_STATE_RACE;
-				gameStats.checkpoint(120, true);
+				gameStats.checkpoint(180, true);
 				checkpointFired = true;
 				if (!firstCheckPoint)
 				{
@@ -575,6 +583,14 @@ public class MainGameScreen implements Screen {
 		treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 
 	}
+	
+	private int distance(RoadSegment a, RoadSegment b)
+	{
+		int i = a.index;
+		int j = b.index;
+		
+		return  ( ((i - j) % segments.size())); 
+	}
 
 	private void updateCars(float dt, RoadSegment playerSegment, float playerW) {
 		RoadSegment oldSegment, newSegment;
@@ -590,7 +606,30 @@ public class MainGameScreen implements Screen {
 				oldSegment.cars.remove(index);
 				newSegment.cars.add(car);
 			}
+			
+			int audioMaxDistance = 30;
+			
+			int distance = distance(playerSegment, newSegment); 
+			if (Math.abs(distance) < audioMaxDistance)
+			{
+				car.audible = true;
+				car.pitchModifier = Util.randomFloat(1.5f,  2.5f);
+				car.soundId = soundSystem.carSound(car.soundId, 1 - Math.abs(((float)distance) /audioMaxDistance) , Util.limit(car.offset - playerX, -1, 1), car.pitchModifier);
+//				System.out.println("audible: " + car.soundId + ", " + (1 - Math.abs(((float)distance) /audioMaxDistance)) + ", " +  Util.limit(car.offset - playerX, -1, 1));
+			}
+			else
+			{
+				if (car.audible)
+				{
+					soundSystem.stopCarSound(car.soundId);
+//					System.out.println("stopping: " + car.soundId);
+					car.soundId = -1;
+					car.audible = false;
+				}
+			}
 		}
+		
+		
 	}
 
 
@@ -741,7 +780,7 @@ public class MainGameScreen implements Screen {
 
 	private void updateSoundSystem(float f) {
 		soundSystem.enginePitch(f);
-		
+		soundSystem.updateRadio();
 	}
 
 	private void updateGameStats(float delta) 

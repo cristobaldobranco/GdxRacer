@@ -49,6 +49,11 @@ public class Util {
 		return randomChoice(posNegChoice);
 	}
 	
+	public static float randomFloat(float min, float max)
+	{
+		return interpolate(min, max, rnd.nextFloat());
+	}
+	
 	public static boolean overlap(float x1, float w1, float x2, float w2, float percent) {
 		float half = percent/2;
 		float min1 = x1 - (w1*half);

@@ -8,4 +8,8 @@ class Car
 	float z;
 	float percent;
 	float width;
+	
+	boolean audible = false;
+	long soundId = -1;
+	float pitchModifier;
 }

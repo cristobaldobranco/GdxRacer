@@ -36,6 +36,19 @@ public class SoundSystem {
 		}
 		
 		engineSound = Gdx.audio.newSound(Gdx.files.internal("sound/engine.wav"));	
+
+	}
+	
+	public void updateRadio()
+	{
+		if (!radioFiles.isEmpty())
+		{
+			if (music != null && !music.isPlaying())
+			{
+				radioSkip();
+			}
+		}
+		
 	}
 	
 	public void radioEnable(boolean on)
@@ -45,7 +58,7 @@ public class SoundSystem {
 			if (!radioFiles.isEmpty())
 			{
 				music = Gdx.audio.newMusic(Gdx.files.internal("music/" + radioFiles.get(radioIndex) ));
-				music.setVolume(0.4f);
+				music.setVolume(0.2f);
 				music.play();
 			}
 		}
@@ -84,9 +97,30 @@ public class SoundSystem {
 	public void engineStart()
 	{
 		engineSoundPlayerId = engineSound.loop();
+		engineSound.setVolume(engineSoundPlayerId, 0.3f);
 	}
 	
-//	float [] gearRatio = {25f/240f, 50f/240f, 80f/240f, 120f/240f, 170f/240f, 250f/240f};
+	public long carSound(long soundId, float distance, float offset, float modifier)
+	{
+		long ret = soundId;
+		if (soundId < 0)
+		{
+			ret = engineSound.loop(distance, distance*modifier, offset);
+		}
+		else
+		{
+			engineSound.setPan(soundId, offset, distance);
+			engineSound.setPitch(soundId, distance*modifier);
+		}
+		return ret;
+	}
+	
+	public void stopCarSound(long soundId) {
+		engineSound.stop(soundId);
+	}
+
+	
+	//	float [] gearRatio = {25f/240f, 50f/240f, 80f/240f, 120f/240f, 170f/240f, 250f/240f};
 	float [] gearRatio = {80f/240f, 170f/240f, 250f/240f};
 	int gear = 1;
 	
@@ -111,6 +145,8 @@ public class SoundSystem {
 			gearMaxValue = gearRatio[i];
 		}
 		
-		engineSound.setPitch(engineSoundPlayerId, 3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+1);
+		engineSound.setPitch(engineSoundPlayerId, 3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+2);
+//		System.out.println(3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+1);
 	}
+
 }

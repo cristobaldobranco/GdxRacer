@@ -15,6 +15,9 @@ public class SoundSystem {
 	
 	Sound engineSound;
 	long engineSoundPlayerId; 
+
+	Sound tireSquealSound;
+	long tireSquealId;
 	
 	public SoundSystem()
 	{
@@ -36,7 +39,8 @@ public class SoundSystem {
 		}
 		
 		engineSound = Gdx.audio.newSound(Gdx.files.internal("sound/engine.wav"));	
-
+		tireSquealSound = Gdx.audio.newSound(Gdx.files.internal("sound/tires_squal_loop.wav"));
+		tireSquealId = tireSquealSound.loop(0);
 	}
 	
 	public void updateRadio()
@@ -147,6 +151,12 @@ public class SoundSystem {
 		
 		engineSound.setPitch(engineSoundPlayerId, 3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+2);
 //		System.out.println(3*((pct - gearMinValue) / (gearMaxValue - gearMinValue))+1);
+	}
+	
+	public void tireSqueal(float force)
+	{
+		System.out.println(force);
+		tireSquealSound.setVolume(tireSquealId, Util.limit(force, 0, 1));
 	}
 
 }

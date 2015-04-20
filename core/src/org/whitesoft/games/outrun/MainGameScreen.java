@@ -505,12 +505,23 @@ public class MainGameScreen implements Screen {
 		position = Util.increase(position, dt * speed, trackLength);
 
 		float dx = dt * 2 * speedPercent; // at top speed, should be able to cross from left to right (-1 to 1) in 1 second
-
-		playerX = playerX + dx * inputX;
-//		System.out.println(dx + ", " + inputX*dx);
 		
+		float forceX = dx * inputX;
+
+		playerX = playerX + forceX;
+//		System.out.println(dx + ", " + inputX*dx);
 	
-		playerX = playerX - (dx * speedPercent * playerSegment.curve * centrifugal);		
+		float forceCentrifugal = dx * speedPercent * playerSegment.curve * centrifugal;	
+		playerX = playerX - forceCentrifugal;
+		
+		
+		float force = forceX*forceCentrifugal*1000;
+		soundSystem.tireSqueal(Util.interpolate(0.0f, 1.2f, force) - 0.4f); 
+		;
+
+		
+
+		
 
 		if (keyFaster)
 			speed = Util.accelerate(speed, accel, dt);

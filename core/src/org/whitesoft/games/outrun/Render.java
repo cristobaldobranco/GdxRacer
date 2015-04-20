@@ -111,7 +111,7 @@ public class Render {
 //		table.setFillParent(true);
 		table.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		table.debug();
+//		table.debug();
 
 		LabelStyle style24 = new LabelStyle(font24, null);
 		LabelStyle style48 = new LabelStyle(font48, null);

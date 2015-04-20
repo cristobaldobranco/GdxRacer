@@ -151,7 +151,7 @@ public class MainGameScreen implements Screen {
 	Vector<Car> cars;
 
 	float roadWidth     = 2000;                    // actually half the roads width, easier math if the road spans from -roadWidth to +roadWidth
-	float segmentLength = 200;                     // length of a single segment
+	float segmentLength = 240;                     // length of a single segment
 	int  rumbleLength  = 3;                       // number of segments per red/white rumble strip
 	float  trackLength   = 0;                    // z length of entire track (computed)
 	float  lanes         = 3;                       // number of lanes
@@ -165,6 +165,7 @@ public class MainGameScreen implements Screen {
 	float  position      = 0;                       // current camera Z position (add playerZ to get player's absolute Z position)
 	float  speed         = 0;                       // current speed
 	float  maxSpeed      = segmentLength/step1;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
+	float  maxHorizontalSpeed      = maxSpeed - 800;      // top speed (ensure we can't move more than 1 segment in a single frame to make collision detection easier)
 	float  accel         =  maxSpeed/7;             // acceleration rate - tuned until it 'felt' right
 	float  breaking      = -maxSpeed;               // deceleration rate when braking
 	float  decel         = -maxSpeed/5;             // 'natural' deceleration rate when neither accelerating, nor braking
@@ -345,7 +346,7 @@ public class MainGameScreen implements Screen {
 	private void addDownhillToEnd(int num) {
 		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
-		float firstY = (segments.size() == 0) ? 0 : segments.get(0).p1.world.y;
+		float firstY = (segments.size() == 0) ? 0 : segments.get(0).p2.world.y;
 		float diff = -lastY() + firstY;
 		
 
@@ -354,14 +355,13 @@ public class MainGameScreen implements Screen {
 
 	private void generateRandomTrack(int cutOffLength)
 	{
-		Random rnd = new Random(); 
 
 		addStraight(Length.randomLetter().value);
 		System.out.println(lastY());
 		
 		while (segments.size() < cutOffLength)
 		{
-			int r = rnd.nextInt(); //50% of elements are curves
+			int r = Util.randomInt(0, 10); //50% of elements are curves
 			switch (r)
 			{
 			case 0: addLowRollingHills(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
@@ -518,7 +518,7 @@ public class MainGameScreen implements Screen {
 			speed = Util.accelerate(speed, breaking, dt);
 		else
 			speed = Util.accelerate(speed, decel, dt);
-
+		
 		if ((playerX < -1) || (playerX > 1)) {
 			if (speed > offRoadLimit) {
 				speed = Util.accelerate(speed, offRoadDecel, dt);
@@ -576,8 +576,9 @@ public class MainGameScreen implements Screen {
 			raceState = RaceState.RACE_STATE_GAMEOVER;
 
 		playerX = Util.limit(playerX, -2, 2);     // dont ever let player go too far out of bounds
+		speed   = Util.limit(speed, 0f, maxHorizontalSpeed - 10f * (playerSegment.p2.world.y-playerSegment.p1.world.y)); // or exceed maxSpeed		
 		speed   = Util.limit(speed, 0, maxSpeed); // or exceed maxSpeed
-
+		
 		skyOffset  = Util.increase(skyOffset,  skySpeed  * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 		hillOffset = Util.increase(hillOffset, hillSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);
 		treeOffset = Util.increase(treeOffset, treeSpeed * playerSegment.curve * (position-startPosition)/segmentLength, 1);

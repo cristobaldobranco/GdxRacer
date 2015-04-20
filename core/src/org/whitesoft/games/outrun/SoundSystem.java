@@ -109,7 +109,7 @@ public class SoundSystem {
 		}
 		else
 		{
-			engineSound.setPan(soundId, offset, distance);
+			engineSound.setPan(soundId, offset, distance +0.2f);
 			engineSound.setPitch(soundId, distance*modifier);
 		}
 		return ret;

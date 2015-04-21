@@ -785,14 +785,14 @@ public class MainGameScreen implements Screen {
 		{
 			updateGameStats(delta);
 			updateGameWorld(delta);
-			updateSoundSystem(speed/maxSpeed);
+			updateSoundSystem(speed/maxSpeed, delta);
 		}
 		draw(delta);
 	}
 
-	private void updateSoundSystem(float f) {
+	private void updateSoundSystem(float f, float dt) {
 		soundSystem.enginePitch(f);
-		soundSystem.updateRadio();
+		soundSystem.updateRadio(dt);
 	}
 
 	private void updateGameStats(float delta) 

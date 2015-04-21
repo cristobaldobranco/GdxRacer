@@ -18,7 +18,9 @@ public class SoundSystem {
 
 	Sound tireSquealSound;
 	long tireSquealId;
-	
+	float tireSquealVolumeTarget  = 0;
+	float tireSquealVolumeCurrent = 0;
+
 	public SoundSystem()
 	{
 		FileHandle dirHandle;
@@ -43,7 +45,7 @@ public class SoundSystem {
 		tireSquealId = tireSquealSound.loop(0);
 	}
 	
-	public void updateRadio()
+	public void updateRadio(float dt)
 	{
 		if (!radioFiles.isEmpty())
 		{
@@ -52,7 +54,14 @@ public class SoundSystem {
 				radioSkip();
 			}
 		}
-		
+		float step = 0.03f;
+		if (Float.compare(tireSquealVolumeCurrent, tireSquealVolumeTarget) != 0)
+		{
+			float dv = -tireSquealVolumeCurrent + tireSquealVolumeTarget;
+			dv = Util.limit(dv, -step, step);
+			tireSquealVolumeCurrent += dv;
+		}
+		tireSquealSound.setVolume(tireSquealId, Util.limit(tireSquealVolumeCurrent, 0, 1));
 	}
 	
 	public void radioEnable(boolean on)
@@ -155,8 +164,7 @@ public class SoundSystem {
 	
 	public void tireSqueal(float force)
 	{
-		System.out.println(force);
-		tireSquealSound.setVolume(tireSquealId, Util.limit(force, 0, 1));
+		tireSquealVolumeTarget = force;		
 	}
 
 }

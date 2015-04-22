@@ -62,8 +62,8 @@ public class MainGameScreen implements Screen {
 		private static final int SIZE = VALUES.size();
 		private static final Random RANDOM = new Random();
 
-		public static Curve randomLetter()  {
-			return VALUES.get(RANDOM.nextInt(SIZE));
+		public static float randomValue()  {
+			return VALUES.get(RANDOM.nextInt(SIZE)).value;
 		}
 
 	}	
@@ -92,8 +92,8 @@ public class MainGameScreen implements Screen {
 		private static final int SIZE = VALUES.size();
 		private static final Random RANDOM = new Random();
 
-		public static Hill randomLetter()  {
-			return VALUES.get(RANDOM.nextInt(SIZE));
+		public static float randomValue()  {
+			return VALUES.get(RANDOM.nextInt(SIZE)).value;
 		}
 	}		
 
@@ -121,8 +121,8 @@ public class MainGameScreen implements Screen {
 		private static final int SIZE = VALUES.size();
 		private static final Random RANDOM = new Random();
 
-		public static Length randomLetter()  {
-			return VALUES.get(RANDOM.nextInt(SIZE));
+		public static int randomValue()  {
+			return VALUES.get(RANDOM.nextInt(SIZE)).value;
 		}
 	}		
 	enum RaceState {
@@ -301,7 +301,7 @@ public class MainGameScreen implements Screen {
 //		urve = (curve > 0) ? curve : Curve.MEDIUM.value;
 		//		height = (height > 0) ? height : Hill.MEDIUM.value;
 		Gdx.app.log("TrackGen", "addCurve(" +  num + ", " + curve + ", "+ height + ")");
-		addRoad(Length.randomLetter().value +25, Length.randomLetter().value+25, Length.randomLetter().value+25, curve, height);
+		addRoad(Length.randomValue() +25, Length.randomValue()+25, Length.randomValue()+25, curve, height);
 //		addRoad(num, num, num, curve, height);
 	}
 
@@ -346,17 +346,16 @@ public class MainGameScreen implements Screen {
 	private void addDownhillToEnd(int num) {
 		Gdx.app.log("TrackGen", "addLowRollingHills(" +  num + ")");		
 		num = num > 0 ? num : 200;    	
-		float firstY = (segments.size() == 0) ? 0 : segments.get(0).p2.world.y;
-		float diff = -lastY() + firstY;
-		
 
-		addRoad(num, num, num, Util.randomSign()*Curve.EASY.value, diff/segmentLength);
+		addRoad(num, num, num, Util.randomSign()*Curve.EASY.value, -lastY()/segmentLength);
+		// hack the possible step in front of finish line, there might be a little drop but I intend to generate non-loop tracks anyway
+		segments.get(segments.size() - 1).p2.world.y = segments.get(0).p1.world.y;   
 	}
 
 	private void generateRandomTrack(int cutOffLength)
 	{
 
-		addStraight(Length.randomLetter().value);
+		addStraight(Length.randomValue());
 		System.out.println(lastY());
 		
 		while (segments.size() < cutOffLength)
@@ -364,12 +363,12 @@ public class MainGameScreen implements Screen {
 			int r = Util.randomInt(0, 10); //50% of elements are curves
 			switch (r)
 			{
-			case 0: addLowRollingHills(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
+			case 0: addLowRollingHills(Length.randomValue(), Util.randomSign() * Hill.randomValue());
 			case 1: addSCurves(); 
-			case 2: addStraight(Length.randomLetter().value);
+			case 2: addStraight(Length.randomValue());
 			case 3: addBumps();
-			case 4: addHill(Length.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
-			default: addCurve(Length.randomLetter().value, Util.randomSign() * Curve.randomLetter().value, Util.randomSign() * Hill.randomLetter().value);
+			case 4: addHill(Length.randomValue(), Util.randomSign() * Hill.randomValue());
+			default: addCurve(Length.randomValue(), Util.randomSign() * Curve.randomValue(), Util.randomSign() * Hill.randomValue());
 			}
 			System.out.println(lastY());
 		}
@@ -381,7 +380,7 @@ public class MainGameScreen implements Screen {
 
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
-		generateRandomTrack(5300);
+		generateRandomTrack(4800);
 		/*
  		addStraight(Length.SHORT.value);
  		addLowRollingHills(0, 0);

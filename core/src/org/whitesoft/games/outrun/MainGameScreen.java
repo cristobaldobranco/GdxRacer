@@ -13,6 +13,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.controllers.Controller;
+import com.badlogic.gdx.controllers.Controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
@@ -196,11 +198,32 @@ public class MainGameScreen implements Screen {
 
 	private SoundSystem soundSystem;
 
+	private Controller controller;
+
 	public MainGameScreen(Game game)
 	{
 		this.game = game;
 		
 		soundSystem = new SoundSystem();
+		controller = Controllers.getControllers().first();
+/*
+		if (controller != null)
+		{
+			controller.addListener(new ControllerAdapter() {
+			    public boolean buttonDown (Controller controller, int buttonCode)
+			    {
+			    	System.out.println(controller.getName() + ": button " +  buttonCode);
+			    	return true;
+			    }
+			    public boolean axisMoved (Controller controller, int axisCode, float value)
+			    {
+			    	System.out.println("axis: " + axisCode + ":  " +  value);
+			    	return true;
+			    }
+				});
+		}
+*/		
+			
 
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
@@ -788,19 +811,28 @@ public class MainGameScreen implements Screen {
 		{
 			if (raceState != RaceState.RACE_STATE_TIMEUP)
 			{
-				keyFaster = Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP) ;
+				keyFaster = Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.UP) || ((controller != null) && controller.getButton(7));
 			}
 			else
 			{
 				keyFaster = false;
 			}
-			keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) ;
+			keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) || ((controller != null) && controller.getButton(6));
+
+
+			if (controller != null)
+			{
+				inputX = controller.getAxis(3);
+				if (( inputX > -0.1f) && (inputX < 0.1f))
+				{
+					inputX = 0;
+				}
+			}
+			// keyboard overrides analog controller input
 			if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT))
 				inputX = -1;
 			else if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT))
 				inputX = 1;
-			else 
-				inputX = 0;
 		}
 		
 		if (Gdx.input.isKeyJustPressed(Keys.SPACE))

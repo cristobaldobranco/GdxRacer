@@ -22,22 +22,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
 public class MainGameScreen implements Screen {
-	/*
-	static int LENGTH_NONE = 0;
-	static int LENGTH_SHORT = 25;
-	static int LENGTH_MEDIUM = 50;
-	static int LENGTH_LONG = 100;
 
-	static int HILL_NONE = 0;
-	static int HILL_LOW  = 20;
-	static int HILL_MEDIUM = 40;
-	static int HILL_HIGH = 60;
-
-	static int CURVE_NONE = 0;
-	static int CURVE_EASY = 2;
-	static int CURVE_MEDIUM = 4;
-	static int CURVE_HARD = 6;
-	 */
 	enum Curve{
 		NONE(0),
 		EASY(2),
@@ -216,11 +201,7 @@ public class MainGameScreen implements Screen {
 		this.game = game;
 		
 		soundSystem = new SoundSystem();
-/*		
-		music = Gdx.audio.newMusic(Gdx.files.internal("music/568498_Race-bit.mp3"));
-		music.setLooping(true);
-		music.setVolume(0.6f);
-*/
+
 		width         = Gdx.graphics.getWidth();
 		height 		  = Gdx.graphics.getHeight();
 
@@ -356,7 +337,6 @@ public class MainGameScreen implements Screen {
 	{
 
 		addStraight(Length.randomValue());
-		System.out.println(lastY());
 		
 		while (segments.size() < cutOffLength)
 		{
@@ -370,37 +350,16 @@ public class MainGameScreen implements Screen {
 			case 4: addHill(Length.randomValue(), Util.randomSign() * Hill.randomValue());
 			default: addCurve(Length.randomValue(), Util.randomSign() * Curve.randomValue(), Util.randomSign() * Hill.randomValue());
 			}
-			System.out.println(lastY());
 		}
 		addHill(Length.LONG.value, -Hill.MEDIUM.value);
-		System.out.println(lastY());		
+		System.out.println(lastY());
 		addDownhillToEnd(0);
-		System.out.println(lastY());		
+		System.out.println(lastY());
 	}
 
 	void resetRoad() {
 		segments = new Vector<RoadSegment>();
 		generateRandomTrack(4800);
-		/*
- 		addStraight(Length.SHORT.value);
- 		addLowRollingHills(0, 0);
-		addSCurves();
-		addCurve(Length.MEDIUM.value, Curve.MEDIUM.value, Hill.LOW.value);
-		addBumps();
-		addLowRollingHills(0,0);
-		addCurve(Length.LONG.value*2, Curve.MEDIUM.value, Hill.MEDIUM.value);
-		addStraight(0);
-		addHill(Length.MEDIUM.value, Hill.HIGH.value);
-		addSCurves();
-		addCurve(Length.LONG.value, -Curve.MEDIUM.value, Hill.NONE.value);
-		addHill(Length.LONG.value, Hill.HIGH.value);
-		addCurve(Length.LONG.value, Curve.MEDIUM.value, -Hill.LOW.value);
-		addBumps();
-		addHill(Length.LONG.value, -Hill.MEDIUM.value);
-		addStraight(0);
-		addSCurves();
-		addDownhillToEnd(0);
-		 */
 		resetSprites();
 		resetCars();
 
@@ -508,7 +467,6 @@ public class MainGameScreen implements Screen {
 		float forceX = dx * inputX;
 
 		playerX = playerX + forceX;
-//		System.out.println(dx + ", " + inputX*dx);
 	
 		float forceCentrifugal = dx * speedPercent * playerSegment.curve * centrifugal;	
 		playerX = playerX - forceCentrifugal;
@@ -770,7 +728,6 @@ public class MainGameScreen implements Screen {
 		}
 		Render.instance.finishRenderSequence();
 
-
 		Render.instance.ui(gameStats);
 
 	}
@@ -908,7 +865,7 @@ public class MainGameScreen implements Screen {
 
 	void reset() {
 		cameraDepth            = (float) (1 / Math.tan((fieldOfView/2) * Math.PI/180));
-		playerZ                = (cameraHeight * cameraDepth);
+		playerZ                = (cameraHeight * cameraDepth)+100;
 		resolution             = height/480;
 
 		if (segments == null || segments.size() ==0)

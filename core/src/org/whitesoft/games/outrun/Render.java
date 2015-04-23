@@ -235,9 +235,7 @@ public class Render {
 
 	public void player(float width, float height, float resolution, float roadWidth, float speedPercent, float scale, float destX, float destY, float steer, float updown) 
 	{
-		int [] choices = {-1, 1} ;
-
-		float bounce = (float) (1.5 * Math.random() * speedPercent * resolution) * Util.randomChoice(choices);
+		float bounce = (float) (1.5 * Math.random() * speedPercent * resolution) * Util.randomSign();
 
 		String spriteName;
 		if (steer < 0)

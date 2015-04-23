@@ -14,7 +14,7 @@ A port of jakesgordon's racer https://github.com/jakesgordon/javascript-racer/ t
 - Start/Checkpoints/Finish
 - Non-loop track
 - Multiple track types
-- Move camera further back
+- ~~Move camera further back~~
 - Changing out backgrounds
 - Other car sounds
 - Start menu/Pause screen
@@ -23,3 +23,4 @@ A port of jakesgordon's racer https://github.com/jakesgordon/javascript-racer/ t
 - Crash sound
 - Game Controller Input
 - Touch Screen Interface
+- Car race off in finish

@@ -27,17 +27,7 @@ public class Util {
 		p.screen.y     = Math.round((height/2) - (p.screenScale * p.camera.y  * height/2));
 		p.screen.z     = Math.round(             (p.screenScale * roadWidth   * width/2));  // was screen.w
 	}
-/*
-	project: function(p, cameraX, cameraY, cameraZ, cameraDepth, width, height, roadWidth) {
-		p.camera.x     = (p.world.x || 0) - cameraX;
-		p.camera.y     = (p.world.y || 0) - cameraY;
-		p.camera.z     = (p.world.z || 0) - cameraZ;
-		p.screen.scale = cameraDepth/p.camera.z;
-		p.screen.x     = Math.round((width/2)  + (p.screen.scale * p.camera.x  * width/2));
-		p.screen.y     = Math.round((height/2) - (p.screen.scale * p.camera.y  * height/2));
-		p.screen.w     = Math.round(             (p.screen.scale * roadWidth   * width/2));
-	},
-*/	
+
 	public static boolean overlap(float x1, float w1, float x2, float w2) {
 		return overlap(x1, w1, x2, w2, 1);
 	}
@@ -105,15 +95,3 @@ public class Util {
 		return (float) (a + (b-a)*((-Math.cos(percent*Math.PI)/2) + 0.5));
 	}
 }
-
-
-/*
-var Util = {
-
-		timestamp:        function()                  { return new Date().getTime();                                    },
-		toInt:            function(obj, def)          { if (obj !== null) { var x = parseInt(obj, 10); if (!isNaN(x)) return x; } return Util.toInt(def, 0); },
-		toFloat:          function(obj, def)          { if (obj !== null) { var x = parseFloat(obj);   if (!isNaN(x)) return x; } return Util.toFloat(def, 0.0); },
-
-}
-
-*/

@@ -337,6 +337,10 @@ public class MainGameScreen implements Screen {
 	{
 
 		addStraight(Length.randomValue());
+/*		addHill(Length.SHORT.value, Hill.HIGH.value);		
+		addHill(Length.SHORT.value, -Hill.HIGH.value);
+		addHill(Length.SHORT.value, Hill.HIGH.value);
+		addHill(Length.SHORT.value, -Hill.HIGH.value);*/
 		
 		while (segments.size() < cutOffLength)
 		{
@@ -526,7 +530,7 @@ public class MainGameScreen implements Screen {
 			if (!checkpointFired )
 			{
 				raceState = RaceState.RACE_STATE_RACE;
-				gameStats.checkpoint(180, true);
+				gameStats.checkpoint(125, true);
 				checkpointFired = true;
 				if (!firstCheckPoint)
 				{
@@ -722,7 +726,7 @@ public class MainGameScreen implements Screen {
 						width/2,
 						(height/2) - (cameraDepth/playerZ * Util.interpolate(playerSegment.p1.camera.y, playerSegment.p2.camera.y, playerPercent) * height/2),
 						speed * inputX,
-						playerSegment.p2.world.y - playerSegment.p1.world.y);
+						playerSegment.p2.world.y - playerSegment.p1.world.y, (playerX < -1) || (playerX > 1));
 			}
 
 		}
@@ -865,7 +869,7 @@ public class MainGameScreen implements Screen {
 
 	void reset() {
 		cameraDepth            = (float) (1 / Math.tan((fieldOfView/2) * Math.PI/180));
-		playerZ                = (cameraHeight * cameraDepth)+100;
+		playerZ                = (cameraHeight * cameraDepth);
 		resolution             = height/480;
 
 		if (segments == null || segments.size() ==0)

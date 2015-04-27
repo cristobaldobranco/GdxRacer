@@ -14,7 +14,9 @@ A port of jakesgordon's racer https://github.com/jakesgordon/javascript-racer/ t
 - Start/Checkpoints/Finish
 - Non-loop track
 - Multiple track types
-- ~~Move camera further back~~
+- ~~Offroad rumble increase~~
+- ~~Move camera further back~~ in a useful way
+- Dynamic camera
 - Changing out backgrounds
 - Other car sounds
 - Start menu/Pause screen

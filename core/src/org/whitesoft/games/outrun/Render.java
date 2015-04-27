@@ -233,9 +233,11 @@ public class Render {
 		return w1/Math.max(6,  2*lanes);
 	}
 
-	public void player(float width, float height, float resolution, float roadWidth, float speedPercent, float scale, float destX, float destY, float steer, float updown) 
+	public void player(float width, float height, float resolution, float roadWidth, float speedPercent, float scale, float destX, float destY, float steer, float updown, boolean offroad) 
 	{
 		float bounce = (float) (1.5 * Math.random() * speedPercent * resolution) * Util.randomSign();
+		if (offroad)
+			bounce *= 5;
 
 		String spriteName;
 		if (steer < 0)

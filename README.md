@@ -23,6 +23,7 @@ A port of jakesgordon's racer https://github.com/jakesgordon/javascript-racer/ t
 - Volume control
 - Particles
 - Crash sound
-- Game Controller Input
+- ~~Game Controller Input~~
+- Input Key/Button Configuration
 - Touch Screen Interface
 - Car race off in finish

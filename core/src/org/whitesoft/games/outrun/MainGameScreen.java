@@ -198,14 +198,17 @@ public class MainGameScreen implements Screen {
 
 	private SoundSystem soundSystem;
 
-	private Controller controller;
+	private Controller controller = null;
 
 	public MainGameScreen(Game game)
 	{
 		this.game = game;
 		
 		soundSystem = new SoundSystem();
-		controller = Controllers.getControllers().first();
+		if (Controllers.getControllers().size > 0)
+		{
+			controller = Controllers.getControllers().first();
+		}
 /*
 		if (controller != null)
 		{
@@ -403,7 +406,9 @@ public class MainGameScreen implements Screen {
 	{
 		cars = new Vector<Car>();
 
-		String [] carNames = { "car01","car02", "car03", "car04", "truck", "semi"} ;		 
+		String [] carNames = { "car01","car02", "car03", "car04", 
+/*				"car05", "car06", */ 
+				"truck", "semi"} ;		 
 		RoadSegment segment;
 		float offset, z, speed;
 		String spriteName;
@@ -442,6 +447,7 @@ public class MainGameScreen implements Screen {
 		segments.get(140).addSprite("billboard03", -1);
 		segments.get(160).addSprite("billboard04", -1);
 		segments.get(180).addSprite("billboard05", -1);
+		segments.get(200).addSprite("billboard10", -1);
 		segments.get(240).addSprite("billboard07", -1.2f);
 		segments.get(240).addSprite("billboard06", 1.2f);		
 		segments.get(segments.size() - 25).addSprite("billboard07", -1.2f);
@@ -464,10 +470,11 @@ public class MainGameScreen implements Screen {
 		for(n = 1000 ; n < (segments.size()-50) ; n += 100) 
 		{
 			int side      = Util.randomSign();
-			segments.get(n + Util.randomInt(0, 50)).addSprite("billboard0" + Util.randomInt(1, 9), -side);
+			String s = String.format("billboard%02d", Util.randomInt(1, 10));
+			segments.get(n + Util.randomInt(0, 50)).addSprite(s, -side);
 
 			for(i = 0 ; i < 20 ; i++) {
-				String s = plants[Util.randomInt(0, plants.length - 1)];
+				s = plants[Util.randomInt(0, plants.length - 1)];
 				float offset = (float) (side * (1.5 + Math.random()));
 				segments.get(n + Util.randomInt(0, 50)).addSprite(s, offset); 
 			}
@@ -762,7 +769,7 @@ public class MainGameScreen implements Screen {
 	@Override
 	public void render(float delta) 
 	{
-//		fpsLogger.log();
+		fpsLogger.log();
 		getInput();
 		if (!gamePaused )
 		{
@@ -823,7 +830,7 @@ public class MainGameScreen implements Screen {
 			}
 			keySlower = Gdx.input.isKeyPressed(Keys.S) || Gdx.input.isKeyPressed(Keys.DOWN) || ((controller != null) && controller.getButton(6));
 
-
+			inputX = 0;
 			if (controller != null)
 			{
 				inputX = controller.getAxis(3);
